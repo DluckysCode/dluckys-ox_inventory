@@ -35,25 +35,27 @@ end
 local byId = {}
 for _, n in ipairs(nodes) do byId[n.id] = n end
 
---- Lo que ven los clientes: { [id] = { t, x, y, z, r = disponible } }
-local function publish()
+--- Lista completa (solo al entrar): { [id] = { t, x, y, z, r = disponible } }
+lib.callback.register('ox_inventory:rustLootList', function()
     local list = {}
     for _, n in ipairs(nodes) do list[n.id] = { t = n.t, x = n.x, y = n.y, z = n.z, r = n.ready } end
-    GlobalState.rustLoot = list
+    return list
+end)
+
+--- Avisa a todos solo del nodo que cambió
+local function setReady(n, ready)
+    n.ready = ready
+    TriggerClientEvent('ox_inventory:rustLootState', -1, n.id, ready)
 end
-publish()
 
 -- Reaparición
 CreateThread(function()
     while true do
         Wait(10000)
-        local now, changed = os.time(), false
+        local now = os.time()
         for _, n in ipairs(nodes) do
-            if not n.ready and now >= (n.readyAt or 0) then
-                n.ready, changed = true, true
-            end
+            if not n.ready and now >= n.readyAt then setReady(n, true) end
         end
-        if changed then publish() end
     end
 end)
 
@@ -80,9 +82,8 @@ lib.callback.register('ox_inventory:rustLootFinish', function(source, id)
     if GetGameTimer() - s.at < (t.duration or 2000) * 0.8 then return false end
     if not near(source, n) then return false, 'Estás muy lejos' end
 
-    n.ready = false
     n.readyAt = os.time() + (t.respawn or 300)
-    publish()
+    setReady(n, false)
 
     local got = 0
     for _, l in ipairs(t.loot or {}) do

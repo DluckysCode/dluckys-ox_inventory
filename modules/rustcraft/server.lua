@@ -50,18 +50,9 @@ local benches = {}
 for _, b in ipairs(config.benches or {}) do benches[b.id] = b end
 
 --- Qué mesas tiene cerca el jugador: { ids = {id=true}, level = n, repair = bool, recycler = bool }
+local sharedBenchState = require 'modules.rustutil.shared'.benchState
 local function benchState(source)
-    local state = { ids = {}, level = 0, repair = false, recycler = false }
-    local pos = GetEntityCoords(GetPlayerPed(source))
-    for id, b in pairs(benches) do
-        if #(pos - b.coords.xyz) <= (b.distance or 3.0) then
-            state.ids[id] = true
-            state.level = math.max(state.level, b.level or 0)
-            state.repair = state.repair or b.repair == true
-            state.recycler = state.recycler or b.recycler == true
-        end
-    end
-    return state
+    return sharedBenchState(config.benches, GetEntityCoords(GetPlayerPed(source)))
 end
 
 ---------------------------------------------------------------------

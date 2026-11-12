@@ -1,13 +1,15 @@
 if not lib then return end
 
+local util = require 'modules.rustutil.client'
 local config = lib.load('data.rust_storage')
+local dist = config.interactDistance or 2.0
 local points = {} -- [id] = lib.point
 
 local function removePoint(id)
     local p = points[id]
     if not p then return end
-    if p.object and DoesEntityExist(p.object) then DeleteEntity(p.object) end
-    if p.showing then lib.hideTextUI() end
+    util.deleteProp(p.object)
+    util.setText(p, false)
     p:remove()
     points[id] = nil
 end
@@ -15,38 +17,23 @@ end
 local function addPoint(box)
     local t = config.types[box.item]
     if not t then return end
-    local coords = vec3(box.x, box.y, box.z)
+    local text = ('[E] Abrir %s  ·  [G] Recoger'):format(t.label)
 
     points[box.id] = lib.points.new({
-        coords = coords,
+        coords = vec3(box.x, box.y, box.z),
         distance = 50,
         onEnter = function(self)
-            lib.requestModel(t.model)
-            self.object = CreateObject(t.model, coords.x, coords.y, coords.z, false, false, false)
-            SetEntityHeading(self.object, box.h or 0.0)
-            PlaceObjectOnGroundProperly(self.object)
-            FreezeEntityPosition(self.object, true)
-            SetModelAsNoLongerNeeded(t.model)
+            self.object = util.spawnProp(t.model, box.x, box.y, box.z, box.h)
         end,
         onExit = function(self)
-            if self.object and DoesEntityExist(self.object) then DeleteEntity(self.object) end
+            util.deleteProp(self.object)
             self.object = nil
-            if self.showing then
-                lib.hideTextUI()
-                self.showing = false
-            end
+            util.setText(self, false)
         end,
         nearby = function(self)
-            local close = self.currentDistance <= (config.interactDistance or 2.0)
-            if close ~= (self.showing or false) then
-                self.showing = close
-                if close then
-                    lib.showTextUI(('[E] Abrir %s  ·  [G] Recoger'):format(t.label), { icon = 'box' })
-                else
-                    lib.hideTextUI()
-                end
-            end
-            if not close or LocalPlayer.state.invOpen then return end
+            local close = self.currentDistance <= dist
+            util.setText(self, close, text, 'box')
+            if not close or util.isInventoryOpen() then return end
 
             if IsControlJustReleased(0, 38) then -- E
                 exports.ox_inventory:openInventory('stash', box.id)
@@ -58,7 +45,7 @@ local function addPoint(box)
     })
 end
 
--- Sincroniza con la lista de cajas del servidor
+-- Sincroniza con la lista de cajas del servidor (GlobalState.rustBoxes)
 local function sync(list)
     list = list or {}
     for id in pairs(points) do

@@ -865,16 +865,7 @@ local function registerCommands()
 		end
 	})
 
-	-- Desactivado: la tecla (F1) que mostraba la barra rápida ya no se usa
-	-- lib.addKeybind({
-	-- 	name = 'hotbar',
-	-- 	description = locale('disable_hotbar'),
-	-- 	defaultKey = client.keys[3],
-	-- 	onPressed = function()
-	-- 		if EnableWeaponWheel or not invHotkeys or IsNuiFocused() or lib.progressActive() then return end
-	-- 		SendNUIMessage({ action = 'toggleHotbar' })
-	-- 	end
-	-- })
+	-- (La tecla F1 de ox que mostraba la barra rápida se quitó: la barra está dentro del inventario)
 
 	for i = 1, 5 do
 		lib.addKeybind({

@@ -38,16 +38,11 @@ local function sendClothing()
     SendNUIMessage({ action = 'rustClothing', data = { slots = slots } })
 end
 
-local function stripSlot(slot)
-    local g = gender()
-    if not g then return end
-    if slot.prop then
-        ClearPedProp(cache.ped, slot.prop)
-    else
-        SetPedComponentVariation(cache.ped, slot.comp, config.naked[g][slot.comp] or 0, 0, 0)
-        for _, extra in ipairs(slot.extra or {}) do
-            SetPedComponentVariation(cache.ped, extra, config.naked[g][extra] or 0, 0, 0)
-        end
+local function stripSlot(g, slot)
+    if slot.prop then return ClearPedProp(cache.ped, slot.prop) end
+    SetPedComponentVariation(cache.ped, slot.comp, config.naked[g][slot.comp] or 0, 0, 0)
+    for _, extra in ipairs(slot.extra or {}) do
+        SetPedComponentVariation(cache.ped, extra, config.naked[g][extra] or 0, 0, 0)
     end
 end
 
@@ -60,6 +55,8 @@ local function applyData(data)
     end
 end
 
+local function readComp(ped, id) return { id, GetPedDrawableVariation(ped, id), GetPedTextureVariation(ped, id) } end
+
 --- Lee lo que llevas puesto en una ranura (nil si no llevas nada)
 local function readSlot(g, slot)
     if not isWorn(g, slot) then return end
@@ -67,10 +64,8 @@ local function readSlot(g, slot)
     if slot.prop then
         return { props = { { slot.prop, GetPedPropIndex(ped, slot.prop), GetPedPropTextureIndex(ped, slot.prop) } } }
     end
-    local comps = { { slot.comp, GetPedDrawableVariation(ped, slot.comp), GetPedTextureVariation(ped, slot.comp) } }
-    for _, extra in ipairs(slot.extra or {}) do
-        comps[#comps + 1] = { extra, GetPedDrawableVariation(ped, extra), GetPedTextureVariation(ped, extra) }
-    end
+    local comps = { readComp(ped, slot.comp) }
+    for _, extra in ipairs(slot.extra or {}) do comps[#comps + 1] = readComp(ped, extra) end
     return { comps = comps }
 end
 
@@ -84,7 +79,7 @@ RegisterNUICallback('rustClothesTakeOff', function(data, cb)
 
     local ok, err = lib.callback.await('ox_inventory:rustClothesTakeOff', false, data.kind, g, current)
     if ok then
-        stripSlot(slot)
+        stripSlot(g, slot)
         saveAppearance()
     else
         notify(err or 'No se pudo quitar la prenda')
@@ -146,21 +141,10 @@ local function stopCam()
     camHandle = nil
 end
 
-local isOpen = false
-AddStateBagChangeHandler('invOpen', ('player:%s'):format(cache.serverId), function(_, _, value)
-    local wasOpen = isOpen
-    isOpen = value and true or false
-
-    if not isOpen then
-        stopCam()
-        return
-    end
-    if wasOpen then return end
-
-    CreateThread(function()
-        startCam()
-        sendClothing()
-    end)
+require 'modules.rustutil.client'.onInventory(function(open)
+    if not open then return stopCam() end
+    startCam()
+    sendClothing()
 end)
 
 AddEventHandler('onResourceStop', function(res)

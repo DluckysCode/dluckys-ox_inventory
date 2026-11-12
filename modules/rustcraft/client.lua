@@ -1,5 +1,7 @@
 if not lib then return end
 
+local util = require 'modules.rustutil.client'
+local benchState = require 'modules.rustutil.shared'.benchState
 local config = lib.load('data.rust_crafting') or {}
 
 --- Sonidos del juego (no necesitan archivos)
@@ -10,84 +12,57 @@ local sounds = {
 }
 local function playSound(name)
     local s = sounds[name]
-    if s then PlaySoundFrontend(-1, s[1], s[2], true) end
+    PlaySoundFrontend(-1, s[1], s[2], true)
 end
-exports('rustSound', playSound)
+
+--- Llama al servidor y responde a la interfaz con { ok, error } + sonido
+local function action(event, ...)
+    local ok, err = lib.callback.await(event, false, ...)
+    playSound(ok and 'craft' or 'error')
+    return { ok = ok == true, error = err }
+end
 
 RegisterNUICallback('rustcraftGetRecipes', function(_, cb)
     cb(lib.callback.await('ox_inventory:rustcraftRecipes', false) or { error = 'El servidor no respondió' })
 end)
-
-RegisterNUICallback('rustcraftCraft', function(data, cb)
-    local ok, err = lib.callback.await('ox_inventory:rustcraftCraft', false, data.id, data.amount)
-    playSound(ok and 'craft' or 'error')
-    cb({ ok = ok, error = err })
-end)
-
-RegisterNUICallback('rustcraftCancel', function(data, cb)
-    cb({ ok = lib.callback.await('ox_inventory:rustcraftCancel', false, data.id) == true })
+RegisterNUICallback('rustcraftCraft', function(d, cb) cb(action('ox_inventory:rustcraftCraft', d.id, d.amount)) end)
+RegisterNUICallback('rustcraftRepair', function(d, cb) cb(action('ox_inventory:rustcraftRepair', d.slot)) end)
+RegisterNUICallback('rustcraftRecycle', function(d, cb) cb(action('ox_inventory:rustcraftRecycle', d.name, d.amount)) end)
+RegisterNUICallback('rustcraftCancel', function(d, cb)
+    cb({ ok = lib.callback.await('ox_inventory:rustcraftCancel', false, d.id) == true })
 end)
 
 RegisterNetEvent('ox_inventory:rustcraftQueue', function(queue, serverTime)
     SendNUIMessage({ action = 'rustcraftQueue', data = { queue = queue, serverTime = serverTime } })
 end)
-
-RegisterNetEvent('ox_inventory:rustcraftDone', function()
-    playSound('done')
-end)
-
-RegisterNUICallback('rustcraftRepair', function(data, cb)
-    local ok, err = lib.callback.await('ox_inventory:rustcraftRepair', false, data.slot)
-    playSound(ok and 'craft' or 'error')
-    cb({ ok = ok, error = err })
-end)
-
-RegisterNUICallback('rustcraftRecycle', function(data, cb)
-    local ok, err = lib.callback.await('ox_inventory:rustcraftRecycle', false, data.name, data.amount)
-    playSound(ok and 'craft' or 'error')
-    cb({ ok = ok, error = err })
-end)
+RegisterNetEvent('ox_inventory:rustcraftDone', function() playSound('done') end)
 
 ---------------------------------------------------------------------
 -- Mesas cercanas en vivo mientras el inventario está abierto
 -- (el servidor igual lo vuelve a comprobar al craftear)
 ---------------------------------------------------------------------
-local function benchState()
-    local state = { ids = {}, level = 0, repair = false, recycler = false }
-    local pos = GetEntityCoords(cache.ped)
-    for _, b in ipairs(config.benches or {}) do
-        if #(pos - b.coords.xyz) <= (b.distance or 3.0) then
-            state.ids[b.id] = true
-            state.level = math.max(state.level, b.level or 0)
-            state.repair = state.repair or b.repair == true
-            state.recycler = state.recycler or b.recycler == true
-        end
-    end
-    return state
+local function sameState(a, b)
+    if not a or a.level ~= b.level or a.repair ~= b.repair or a.recycler ~= b.recycler then return false end
+    for id in pairs(a.ids) do if not b.ids[id] then return false end end
+    for id in pairs(b.ids) do if not a.ids[id] then return false end end
+    return true
 end
 
-local invOpen = false
-AddStateBagChangeHandler('invOpen', ('player:%s'):format(cache.serverId), function(_, _, value)
-    local was = invOpen
-    invOpen = value and true or false
-    if not invOpen or was then return end
-
-    CreateThread(function()
-        local last
-        while invOpen do
-            local state = benchState()
-            local key = json.encode(state)
-            if key ~= last then
-                last = key
-                SendNUIMessage({ action = 'rustcraftBench', data = state })
-            end
-            Wait(1000)
+util.onInventory(function(open)
+    if not open then return end
+    local last
+    while util.isInventoryOpen() do
+        local state = benchState(config.benches, GetEntityCoords(cache.ped))
+        if not sameState(last, state) then
+            last = state
+            SendNUIMessage({ action = 'rustcraftBench', data = state })
         end
-    end)
+        Wait(1000)
+    end
 end)
 
 ---------------------------------------------------------------------
--- Mesas de trabajo: el objeto se crea solo cuando estás cerca
+-- Mesas de trabajo: blip + objeto local cuando estás cerca
 ---------------------------------------------------------------------
 for _, bench in ipairs(config.benches or {}) do
     local c = bench.coords
@@ -104,34 +79,20 @@ for _, bench in ipairs(config.benches or {}) do
     end
 
     if bench.model then
+        local text = ('[TAB] %s'):format(bench.label)
         lib.points.new({
             coords = c.xyz,
             distance = 60,
             onEnter = function(self)
-                lib.requestModel(bench.model)
-                self.object = CreateObject(bench.model, c.x, c.y, c.z, false, false, false)
-                SetEntityHeading(self.object, c.w or 0.0)
-                PlaceObjectOnGroundProperly(self.object)
-                FreezeEntityPosition(self.object, true)
-                SetModelAsNoLongerNeeded(bench.model)
+                self.object = util.spawnProp(bench.model, c.x, c.y, c.z, c.w)
             end,
             onExit = function(self)
-                if self.object and DoesEntityExist(self.object) then DeleteEntity(self.object) end
+                util.deleteProp(self.object)
                 self.object = nil
-                if self.showing then
-                    lib.hideTextUI()
-                    self.showing = false
-                end
+                util.setText(self, false)
             end,
             nearby = function(self)
-                local close = self.currentDistance <= (bench.distance or 3.0)
-                if close and not self.showing then
-                    lib.showTextUI(('[TAB] %s'):format(bench.label), { icon = 'hammer' })
-                    self.showing = true
-                elseif not close and self.showing then
-                    lib.hideTextUI()
-                    self.showing = false
-                end
+                util.setText(self, self.currentDistance <= (bench.distance or 3.0), text, 'hammer')
             end,
         })
     end
