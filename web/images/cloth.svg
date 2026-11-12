@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Tela doblada (pila de 3 capas) -->
+  <g stroke="#3b3227" stroke-width="3" stroke-linejoin="round">
+    <path d="M18 86 L64 104 L110 86 L110 98 L64 116 L18 98 Z" fill="#8a7458"/>
+    <path d="M18 86 L64 68 L110 86 L64 104 Z" fill="#b59a74"/>
+    <path d="M22 66 L64 50 L106 66 L106 78 L64 94 L22 78 Z" fill="#9c8462"/>
+    <path d="M22 66 L64 50 L106 66 L64 82 Z" fill="#c9b08a"/>
+    <path d="M26 46 L64 32 L102 46 L102 58 L64 72 L26 58 Z" fill="#a88e6a"/>
+    <path d="M26 46 L64 32 L102 46 L64 60 Z" fill="#dcc49c"/>
+  </g>
+  <g stroke="#7d6a50" stroke-width="2" stroke-dasharray="4 4" fill="none">
+    <path d="M36 46 L64 36 L92 46"/>
+    <path d="M32 66 L64 54 L96 66"/>
+  </g>
+</svg>

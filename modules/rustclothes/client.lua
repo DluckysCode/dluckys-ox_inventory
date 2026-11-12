@@ -1,0 +1,168 @@
+if not lib then return end
+
+local config = lib.load('data.rust_clothing')
+local slotById = {}
+for _, s in ipairs(config.slots) do slotById[s.id] = s end
+
+local function notify(msg)
+    if not msg then return end
+    PlaySoundFrontend(-1, 'ERROR', 'HUD_FRONTEND_DEFAULT_SOUNDSET', true)
+    lib.notify({ type = 'error', description = msg })
+end
+
+local function saveAppearance()
+    PlaySoundFrontend(-1, 'NAV_LEFT_RIGHT', 'HUD_FRONTEND_DEFAULT_SOUNDSET', true)
+    if GetResourceState('illenium-appearance') ~= 'started' then return end
+    local appearance = exports['illenium-appearance']:getPedAppearance(cache.ped)
+    TriggerServerEvent('illenium-appearance:server:saveAppearance', appearance)
+end
+
+local function gender()
+    local model = GetEntityModel(cache.ped)
+    if model == `mp_m_freemode_01` then return 'male' end
+    if model == `mp_f_freemode_01` then return 'female' end
+end
+
+local function isWorn(g, slot)
+    if not g then return false end
+    if slot.prop then return GetPedPropIndex(cache.ped, slot.prop) ~= -1 end
+    return GetPedDrawableVariation(cache.ped, slot.comp) ~= (config.naked[g][slot.comp] or 0)
+end
+
+local function sendClothing()
+    local g = gender()
+    local slots = {}
+    for i, s in ipairs(config.slots) do
+        slots[i] = { id = s.id, label = s.label, side = s.side, worn = isWorn(g, s) }
+    end
+    SendNUIMessage({ action = 'rustClothing', data = { slots = slots } })
+end
+
+local function stripSlot(slot)
+    local g = gender()
+    if not g then return end
+    if slot.prop then
+        ClearPedProp(cache.ped, slot.prop)
+    else
+        SetPedComponentVariation(cache.ped, slot.comp, config.naked[g][slot.comp] or 0, 0, 0)
+        for _, extra in ipairs(slot.extra or {}) do
+            SetPedComponentVariation(cache.ped, extra, config.naked[g][extra] or 0, 0, 0)
+        end
+    end
+end
+
+local function applyData(data)
+    for _, c in ipairs(data.comps or {}) do
+        SetPedComponentVariation(cache.ped, c[1], c[2], c[3] or 0, 0)
+    end
+    for _, p in ipairs(data.props or {}) do
+        SetPedPropIndex(cache.ped, p[1], p[2], p[3] or 0, true)
+    end
+end
+
+--- Lee lo que llevas puesto en una ranura (nil si no llevas nada)
+local function readSlot(g, slot)
+    if not isWorn(g, slot) then return end
+    local ped = cache.ped
+    if slot.prop then
+        return { props = { { slot.prop, GetPedPropIndex(ped, slot.prop), GetPedPropTextureIndex(ped, slot.prop) } } }
+    end
+    local comps = { { slot.comp, GetPedDrawableVariation(ped, slot.comp), GetPedTextureVariation(ped, slot.comp) } }
+    for _, extra in ipairs(slot.extra or {}) do
+        comps[#comps + 1] = { extra, GetPedDrawableVariation(ped, extra), GetPedTextureVariation(ped, extra) }
+    end
+    return { comps = comps }
+end
+
+RegisterNUICallback('rustClothesTakeOff', function(data, cb)
+    cb(1)
+    local slot = slotById[data.kind]
+    if not slot then return end
+    local g = gender()
+    local current = readSlot(g, slot)
+    if not current then return notify('No llevas nada ahí') end
+
+    local ok, err = lib.callback.await('ox_inventory:rustClothesTakeOff', false, data.kind, g, current)
+    if ok then
+        stripSlot(slot)
+        saveAppearance()
+    else
+        notify(err or 'No se pudo quitar la prenda')
+    end
+    sendClothing()
+end)
+
+RegisterNUICallback('rustClothesEquip', function(data, cb)
+    cb(1)
+    local slot = slotById[data.kind]
+    if not slot then return end
+    local g = gender()
+    local ok, res = lib.callback.await('ox_inventory:rustClothesEquip', false, data.slot, data.kind, g, readSlot(g, slot))
+    if ok and res then
+        applyData(res)
+        saveAppearance()
+    else
+        notify(res or 'No se pudo poner la prenda')
+    end
+    sendClothing()
+end)
+
+---------------------------------------------------------------------
+-- Cámara que muestra al personaje a la izquierda de la pantalla
+---------------------------------------------------------------------
+local cam = config.camera or {}
+local camHandle
+
+local function startCam()
+    if cam.enabled == false or camHandle then return end
+    local ped = cache.ped
+    if IsPedInAnyVehicle(ped, false) or IsEntityDead(ped) then return end
+
+    camHandle = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
+    local o, t = cam.offset or vec3(-2.05, 4.3, -0.5), cam.target or vec3(-2.05, 0.0, -0.58)
+    local fov = cam.fov or 45.0
+    local side = o.x
+
+    if cam.auto ~= false then
+        -- Calcula dónde cae el hueco entre las ranuras de ropa según la pantalla.
+        -- La interfaz mide en "alto de pantalla": margen 3% del ancho + ranuras + mitad del hueco.
+        local w, h = GetActiveScreenResolution()
+        local aspect = w / h
+        local pedX = 0.03 * aspect + 0.26            -- centro del hueco, en altos de pantalla
+        local metersPerScreen = 2 * o.y * math.tan(math.rad(fov / 2))
+        side = -(aspect / 2 - pedX) * metersPerScreen
+    end
+
+    AttachCamToEntity(camHandle, ped, side, o.y, o.z, true)
+    PointCamAtEntity(camHandle, ped, side + (t.x - o.x), t.y, t.z, true)
+    SetCamFov(camHandle, fov)
+    RenderScriptCams(true, true, 400, true, false)
+end
+
+local function stopCam()
+    if not camHandle then return end
+    RenderScriptCams(false, true, 400, true, false)
+    DestroyCam(camHandle, false)
+    camHandle = nil
+end
+
+local isOpen = false
+AddStateBagChangeHandler('invOpen', ('player:%s'):format(cache.serverId), function(_, _, value)
+    local wasOpen = isOpen
+    isOpen = value and true or false
+
+    if not isOpen then
+        stopCam()
+        return
+    end
+    if wasOpen then return end
+
+    CreateThread(function()
+        startCam()
+        sendClothing()
+    end)
+end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res == cache.resource then stopCam() end
+end)
