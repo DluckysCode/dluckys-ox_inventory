@@ -19,14 +19,33 @@ local function addNode(t, x, y, z)
     nodes[#nodes + 1] = { id = id, t = t, x = x, y = y, z = z, ready = true }
 end
 
+--- ¿Está (x, y) a la distancia mínima de las mesas y de los otros nodos?
+local spacing = config.minSpacing or 4.0
+local function freeSpot(x, y)
+    for _, b in ipairs(crafting.benches or {}) do
+        if #(vec2(x, y) - b.coords.xy) < spacing then return false end
+    end
+    for _, n in ipairs(nodes) do
+        if #(vec2(x, y) - vec2(n.x, n.y)) < spacing then return false end
+    end
+    return true
+end
+
 for _, spawn in ipairs(config.spawns or {}) do
     if config.types[spawn.type] then
         for _, p in ipairs(spawn.points or {}) do addNode(spawn.type, p.x, p.y, p.z) end
         for _, zone in ipairs(spawn.zones or {}) do
             for _ = 1, zone.count or 1 do
-                local a = math.random() * math.pi * 2
-                local r = math.sqrt(math.random()) * (zone.radius or 20.0)
-                addNode(spawn.type, zone.center.x + math.cos(a) * r, zone.center.y + math.sin(a) * r, zone.center.z)
+                -- hasta 20 intentos de encontrar un lugar libre; si no hay, se salta ese nodo
+                for _ = 1, 20 do
+                    local a = math.random() * math.pi * 2
+                    local r = math.sqrt(math.random()) * (zone.radius or 20.0)
+                    local x, y = zone.center.x + math.cos(a) * r, zone.center.y + math.sin(a) * r
+                    if freeSpot(x, y) then
+                        addNode(spawn.type, x, y, zone.center.z)
+                        break
+                    end
+                end
             end
         end
     end

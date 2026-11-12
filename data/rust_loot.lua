@@ -56,4 +56,5 @@ return {
     },
 
     interactDistance = 2.0,
+    minSpacing = 4.0, -- metros mínimos (zonas al azar) entre barriles/plantas y de las mesas
 }
