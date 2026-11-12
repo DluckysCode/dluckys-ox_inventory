@@ -1932,6 +1932,5 @@ end)
 require 'modules.rustcraft.client'
 require 'modules.rustclothes.client'
 require 'modules.rustbox.client'
-require 'modules.rustloot.client'
 require 'modules.rustadmin.client'
 require 'modules.rustbackpack.client'

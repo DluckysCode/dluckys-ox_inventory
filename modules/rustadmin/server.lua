@@ -4,7 +4,6 @@ if not lib then return end
 local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
 local Bench = require 'modules.rustbench.server'
-local Loot = require 'modules.rustloot.server'
 local Box = require 'modules.rustbox.server'
 local Craft = require 'modules.rustcraft.server'
 local Log = require 'modules.rustlog.server'
@@ -62,11 +61,7 @@ local tabs = {
         end
 
         local _, byOwner = onlinePlayers()
-        return {
-            benches = benches, templates = templates,
-            lootTypes = Loot.types(), loot = Loot.points(), zones = Loot.zones(),
-            boxTypes = Box.types(), boxes = Box.list(byOwner),
-        }
+        return { benches = benches, templates = templates, boxTypes = Box.types(), boxes = Box.list(byOwner) }
     end,
     players = function()
         return { players = onlinePlayers(), items = allItems(), blueprints = Craft.blueprintRecipes() }
@@ -87,9 +82,8 @@ end)
 --- Para los blips del mapa: todo lo que hay colocado
 lib.callback.register('ox_inventory:rustAdminMap', function(source)
     if not isAdmin(source) then return end
-    local nodes, zones = Loot.map()
     local _, byOwner = onlinePlayers()
-    return { benches = Bench.list(), boxes = Box.list(byOwner), loot = nodes, zones = zones }
+    return { benches = Bench.list(), boxes = Box.list(byOwner) }
 end)
 
 ---------------------------------------------------------------------
@@ -102,11 +96,6 @@ local actions = {
     addBench    = function(_, d) return Bench.add(d.template, pos(d)) end,
     moveBench   = function(_, d) return Bench.move(d.id, pos(d)) end,
     removeBench = function(_, d) return Bench.remove(d.id) end,
-    addLoot     = function(_, d) return Loot.add(d.type, d.x, d.y, d.z) end,
-    moveLoot    = function(_, d) return Loot.move(d.id, d.x, d.y, d.z) end,
-    removeLoot  = function(_, d) return Loot.remove(d.id) end,
-    addZone     = function(_, d) return Loot.addZone(d.type, d.x, d.y, d.z, tonumber(d.radius) or 20, tonumber(d.count) or 5) end,
-    removeZone  = function(_, d) return Loot.removeZone(d.id) end,
     addBox      = function(src, d) return Box.add(src, d.item, pos(d)) end,
     removeBox   = function(_, d) return Box.remove(d.id) end,
     openBox     = function(src, d) return Box.open(src, d.id) end,
@@ -140,7 +129,7 @@ local function describe(action, d)
     if action == 'giveBlueprint' then return ('Dio plano de %s a %s'):format(d.recipe, who or d.target) end
     if action == 'saveRecipe' then return ('Guardó la receta %s%s'):format(d.name, d.disabled and ' (desactivada)' or '') end
     if who then return ('%s: %s'):format(action, who) end
-    return ('%s %s'):format(action, d.id or d.template or d.type or d.item or '')
+    return ('%s %s'):format(action, d.id or d.template or d.item or '')
 end
 
 lib.callback.register('ox_inventory:rustAdminAction', function(source, action, d)

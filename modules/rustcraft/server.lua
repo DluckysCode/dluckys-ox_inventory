@@ -459,7 +459,7 @@ end)
 ---------------------------------------------------------------------
 local M = {}
 
---- Nombres de las recetas activas que usan plano (para los planos al azar del botín)
+--- Nombres de las recetas activas que usan plano (para dar planos desde el panel)
 function M.blueprintRecipes()
     local list = {}
     for _, r in ipairs(recipes) do

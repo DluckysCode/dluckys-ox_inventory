@@ -7,7 +7,6 @@ require 'modules.pefcl.server'
 require 'modules.rustcraft.server'
 require 'modules.rustclothes.server'
 require 'modules.rustbox.server'
-require 'modules.rustloot.server'
 require 'modules.rustadmin.server'
 require 'modules.rustbackpack.server'
 

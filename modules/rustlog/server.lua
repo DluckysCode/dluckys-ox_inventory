@@ -6,7 +6,7 @@ local MAX = 300
 local entries, head = {}, 0
 local M = {}
 
---- kind: craft | recycle | repair | loot | blueprint | box | admin
+--- kind: craft | recycle | repair | blueprint | box | admin
 function M.add(kind, source, text)
     head = head % MAX + 1
     entries[head] = {

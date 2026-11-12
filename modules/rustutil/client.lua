@@ -3,7 +3,7 @@ local M = {}
 
 --- Crea un objeto solo para este jugador, congelado y apoyado en el suelo.
 --- El suelo puede tardar en cargar (sobre todo dentro de edificios), así que reintenta hasta 3 s.
-function M.spawnProp(model, x, y, z, heading, findGround)
+function M.spawnProp(model, x, y, z, heading)
     lib.requestModel(model)
     local obj = CreateObject(model, x, y, z, false, false, false)
     SetEntityHeading(obj, heading or 0.0)
@@ -14,11 +14,6 @@ function M.spawnProp(model, x, y, z, heading, findGround)
         for _ = 1, 30 do
             if not DoesEntityExist(obj) then return end
             RequestCollisionAtCoord(x, y, z)
-            if findGround then
-                -- se busca desde poco por encima para no agarrar techos
-                local found, groundZ = GetGroundZFor_3dCoord(x, y, z + 1.5, false)
-                if found then SetEntityCoords(obj, x, y, groundZ, false, false, false, false) end
-            end
             if PlaceObjectOnGroundProperly(obj) then return end
             Wait(100)
         end
