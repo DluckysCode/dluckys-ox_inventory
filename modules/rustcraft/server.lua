@@ -2,13 +2,34 @@ if not lib then return end
 
 local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
+local Log = require 'modules.rustlog.server'
 local config = lib.load('data.rust_crafting') or { recipes = {}, categories = {} }
 
-local recipes = config.recipes
-local recipeByName = {}
-for i, r in ipairs(recipes) do
-    r.id, r.count = i, r.count or 1
+-- Recetas = las de data/rust_crafting.lua + cambios hechos con /admininventory (guardados en KVP).
+-- Una receta "eliminada" queda desactivada (disabled) para que los ids no cambien.
+local RECIPES_KVP = 'rustcraft:recipes'
+local overrides = json.decode(GetResourceKvpString(RECIPES_KVP) or '{}') or {}
+local EDITABLE = { 'time', 'count', 'category', 'ingredients', 'level', 'bench', 'blueprint', 'disabled' }
+
+local recipes, recipeByName = {}, {}
+
+local function addRecipe(r)
+    r.id, r.count = #recipes + 1, r.count or 1
+    recipes[r.id] = r
     recipeByName[r.name] = r
+end
+
+for _, r in ipairs(config.recipes) do addRecipe(r) end
+for name, o in pairs(overrides) do
+    local r = recipeByName[name]
+    if not r then
+        r = { name = name }
+        addRecipe(r)
+    end
+    for _, k in ipairs(EDITABLE) do
+        if o[k] ~= nil then r[k] = o[k] ~= false and o[k] or nil end
+    end
+    r.count = r.count or 1
 end
 
 local queues = {} ---@type table<number, { list: table[], busy: boolean, token: number, owner: string? }>
@@ -80,6 +101,7 @@ end
 
 --- ¿Puede este jugador craftear esta receta ahora? (ok, motivo)
 local function canUse(source, recipe, state, learned)
+    if recipe.disabled then return false, 'Esta receta está desactivada' end
     if not hasGroup(source, recipe.groups) then return false, 'No puedes craftear esto' end
     if recipe.blueprint and not learned[recipe.name] then return false, 'Necesitas aprender el plano' end
     if recipe.bench and not state.ids[recipe.bench] then
@@ -98,21 +120,23 @@ local uiData
 local function buildUiData()
     local list = {}
     for i, r in ipairs(recipes) do
-        local def = Items(r.name)
-        list[i] = {
-            id = i,
-            name = r.name,
-            label = itemLabel(r.name),
-            description = def and def.description,
-            count = r.count,
-            time = r.time,
-            category = r.category or 'items',
-            ingredients = toList(r.ingredients),
-            bench = r.bench,
-            benchLabel = benchLabel(r.bench),
-            level = r.level,
-            blueprint = r.blueprint == true,
-        }
+        local def = not r.disabled and Items(r.name)
+        if def then
+            list[i] = {
+                id = i,
+                name = r.name,
+                label = def.label or r.name,
+                description = def.description,
+                count = r.count,
+                time = r.time,
+                category = r.category or 'items',
+                ingredients = toList(r.ingredients),
+                bench = r.bench,
+                benchLabel = benchLabel(r.bench),
+                level = r.level,
+                blueprint = r.blueprint == true,
+            }
+        end
     end
 
     local repairItems = {}
@@ -238,7 +262,7 @@ lib.callback.register('ox_inventory:rustcraftRecipes', function(source)
     local learned = getLearned(ownerOf(source))
     local list = {}
     for i, r in ipairs(recipes) do
-        if hasGroup(source, r.groups) then
+        if uiData.recipes[i] and hasGroup(source, r.groups) then
             local entry = table.clone(uiData.recipes[i])
             entry.learned = not r.blueprint or learned[r.name] == true
             list[#list + 1] = entry
@@ -282,6 +306,7 @@ lib.callback.register('ox_inventory:rustcraftCraft', function(source, recipeId, 
     nextJobId += 1
     q.list[#q.list + 1] = { id = nextJobId, recipe = recipe, remaining = amount }
     if q.busy then sendQueue(source) else processQueue(source) end
+    Log.add('craft', source, ('%dx %s'):format(amount * recipe.count, itemLabel(recipe.name)))
     return true
 end)
 
@@ -332,6 +357,7 @@ lib.callback.register('ox_inventory:rustcraftRepair', function(source, slotId)
     for name, amount in pairs(cost) do Inventory.RemoveItem(source, name, amount) end
     Inventory.SetDurability(source, item.slot, 100)
     TriggerClientEvent('ox_inventory:rustcraftDone', source)
+    Log.add('repair', source, ('%s (%d%% -> 100%%)'):format(itemLabel(item.name), math.floor(durability)))
     return true
 end)
 
@@ -353,6 +379,7 @@ lib.callback.register('ox_inventory:rustcraftRecycle', function(source, itemName
     if not Inventory.RemoveItem(source, itemName, amount) then return false, 'No se pudo reciclar' end
     for name, per in pairs(output) do Inventory.AddItem(source, name, per * amount) end
     TriggerClientEvent('ox_inventory:rustcraftDone', source)
+    Log.add('recycle', source, ('%dx %s'):format(amount, itemLabel(itemName)))
     return true
 end)
 
@@ -379,6 +406,7 @@ exports('rustLearnBlueprint', function(event, item, inventory, slot)
     end
 
     learn(owner, recipeName)
+    Log.add('blueprint', source, ('Aprendió %s'):format(itemLabel(recipeName)))
     TriggerClientEvent('ox_lib:notify', source, {
         type = 'success',
         description = ('Aprendiste a craftear: %s'):format(itemLabel(recipeName)),
@@ -397,19 +425,6 @@ local function giveBlueprint(target, recipeName)
     })
 end
 exports('GiveBlueprint', giveBlueprint)
-
-lib.addCommand('darplano', {
-    help = 'Da un plano de crafteo a un jugador',
-    params = {
-        { name = 'target', type = 'playerId', help = 'ID del jugador' },
-        { name = 'receta', type = 'string', help = 'Nombre del item de la receta (ej. armour)' },
-    },
-    restricted = 'group.admin',
-}, function(source, args)
-    if not giveBlueprint(args.target, args.receta) then
-        TriggerClientEvent('ox_lib:notify', source, { type = 'error', description = 'Esa receta no existe o no usa plano' })
-    end
-end)
 
 ---------------------------------------------------------------------
 -- Eventos
@@ -438,3 +453,88 @@ RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
         end
     end)
 end)
+
+---------------------------------------------------------------------
+-- Funciones para /admininventory
+---------------------------------------------------------------------
+local M = {}
+
+--- Nombres de las recetas activas que usan plano (para los planos al azar del botín)
+function M.blueprintRecipes()
+    local list = {}
+    for _, r in ipairs(recipes) do
+        if r.blueprint and not r.disabled then list[#list + 1] = r.name end
+    end
+    return list
+end
+
+function M.categories() return config.categories end
+
+--- Todas las recetas (también las desactivadas) para editarlas
+function M.list()
+    local list = {}
+    for _, r in ipairs(recipes) do
+        list[#list + 1] = {
+            name = r.name, label = itemLabel(r.name), time = r.time, count = r.count,
+            category = r.category or 'items', ingredients = r.ingredients or {},
+            level = r.level, bench = r.bench, blueprint = r.blueprint == true, disabled = r.disabled == true,
+        }
+    end
+    return list
+end
+
+--- Crea o cambia una receta. d = { name, time, count, category, ingredients = {item = n}, level, bench, blueprint, disabled }
+function M.save(d)
+    if type(d.name) ~= 'string' or not Items(d.name) then return false, 'Ese item no existe' end
+
+    local ingredients = {}
+    for item, n in pairs(type(d.ingredients) == 'table' and d.ingredients or {}) do
+        n = tonumber(n)
+        if not Items(item) then return false, ('El material "%s" no existe'):format(item) end
+        if n and n > 0 then ingredients[item] = n end
+    end
+    if not next(ingredients) then return false, 'La receta necesita al menos un material' end
+
+    local o = {
+        time = math.max(1, math.floor(tonumber(d.time) or 1)),
+        count = math.max(1, math.floor(tonumber(d.count) or 1)),
+        category = type(d.category) == 'string' and d.category or 'items',
+        ingredients = ingredients,
+        level = tonumber(d.level) and tonumber(d.level) > 0 and math.floor(tonumber(d.level)) or false,
+        bench = type(d.bench) == 'string' and d.bench ~= '' and d.bench or false,
+        blueprint = d.blueprint == true,
+        disabled = d.disabled == true,
+    }
+    overrides[d.name] = o
+    SetResourceKvp(RECIPES_KVP, json.encode(overrides))
+
+    local r = recipeByName[d.name]
+    if not r then
+        r = { name = d.name }
+        addRecipe(r)
+    end
+    for _, k in ipairs(EDITABLE) do r[k] = o[k] ~= false and o[k] or nil end
+    uiData = nil -- se vuelve a armar para la interfaz
+    return true
+end
+
+--- Planos de un jugador conectado
+local function setLearned(target, learned)
+    local owner = ownerOf(target)
+    if not owner then return false end
+    learnedCache[owner] = learned
+    SetResourceKvp(('rustcraft:bp:%s'):format(owner), json.encode(learned))
+    return true
+end
+
+function M.resetBlueprints(target) return setLearned(target, {}) end
+
+function M.learnAll(target)
+    local learned = {}
+    for _, name in ipairs(M.blueprintRecipes()) do learned[name] = true end
+    return setLearned(target, learned)
+end
+
+M.giveBlueprint = giveBlueprint
+
+return M

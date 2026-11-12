@@ -1,6 +1,7 @@
 if not lib then return end
 
 local Inventory = require 'modules.inventory.server'
+local Log = require 'modules.rustlog.server'
 local config = lib.load('data.rust_storage')
 
 -- Lista de cajas colocadas, guardada en KVP: { [id] = { id, item, owner, x, y, z, h } }
@@ -17,6 +18,25 @@ local function register(box)
     if not t then return end
     exports.ox_inventory:RegisterStash(box.id, t.label, t.slots, t.maxWeight,
         config.ownerOnly and box.owner or nil, nil, vec3(box.x, box.y, box.z))
+end
+
+local function addBox(item, owner, x, y, z, h)
+    local box = {
+        id = ('rustbox_%s_%d'):format(os.time(), math.random(1000, 9999)),
+        item = item, owner = owner, x = x, y = y, z = z, h = h,
+    }
+    boxes[box.id] = box
+    register(box)
+    save()
+    return box
+end
+
+local function removeBox(id)
+    if not boxes[id] then return false end
+    exports.ox_inventory:ClearInventory(id)
+    boxes[id] = nil
+    save()
+    return true
 end
 
 ---------------------------------------------------------------------
@@ -45,7 +65,7 @@ local function cleanup()
     end
     if removed > 0 then
         save()
-        print(('[rustbox] Se quitaron %d cajas abandonadas (dueño sin conectarse %d días)'):format(removed, days))
+        Log.add('box', 0, ('Se quitaron %d cajas abandonadas (%d días sin conectarse)'):format(removed, days))
     end
 end
 
@@ -88,8 +108,7 @@ exports('rustPlaceBox', function(event, item, inventory)
     if event ~= 'usingItem' then return end
 
     local source, owner = inventory.id, inventory.owner
-    local t = config.types[item.name]
-    if not t or not owner then return false end
+    if not config.types[item.name] or not owner then return false end
 
     if countOwned(owner) >= (config.maxPerPlayer or 5) then
         TriggerClientEvent('ox_lib:notify', source, { type = 'error', description = 'Ya tienes demasiadas cajas colocadas' })
@@ -104,22 +123,9 @@ exports('rustPlaceBox', function(event, item, inventory)
 
     local pos, h = GetEntityCoords(ped), GetEntityHeading(ped)
     local r = math.rad(h)
-    local id = ('rustbox_%s_%d'):format(os.time(), math.random(1000, 9999))
-
-    local box = {
-        id = id,
-        item = item.name,
-        owner = owner,
-        x = pos.x - math.sin(r) * 1.2,
-        y = pos.y + math.cos(r) * 1.2,
-        z = pos.z - 1.0,
-        h = h,
-    }
-
-    boxes[id] = box
-    register(box)
-    save()
+    addBox(item.name, owner, pos.x - math.sin(r) * 1.2, pos.y + math.cos(r) * 1.2, pos.z - 1.0, h)
     markSeen(owner)
+    Log.add('box', source, ('Colocó %s'):format(config.types[item.name].label))
     return true -- se consume el item
 end)
 
@@ -144,5 +150,50 @@ lib.callback.register('ox_inventory:rustBoxPickup', function(source, id)
     boxes[id] = nil
     save()
     Inventory.AddItem(source, box.item, 1)
+    Log.add('box', source, 'Recogió su caja')
     return true
 end)
+
+---------------------------------------------------------------------
+-- Funciones para /admininventory
+---------------------------------------------------------------------
+local M = {}
+
+function M.types()
+    local list = {}
+    for id, t in pairs(config.types) do list[#list + 1] = { id = id, label = t.label } end
+    return list
+end
+
+--- Todas las cajas, con el nombre del dueño si está conectado
+--- (el contenido no se carga aquí para no leer la base de datos de cada caja)
+function M.list(online)
+    local list = {}
+    for id, b in pairs(boxes) do
+        list[#list + 1] = {
+            id = id, label = config.types[b.item] and config.types[b.item].label or b.item,
+            owner = b.owner, ownerName = online[b.owner],
+            x = b.x, y = b.y, z = b.z,
+        }
+    end
+    return list
+end
+
+--- Un admin coloca una caja a su nombre
+function M.add(source, item, x, y, z, h)
+    local inv = Inventory(source)
+    if not config.types[item] or not inv then return false end
+    addBox(item, inv.owner, x, y, z, h)
+    return true
+end
+
+M.remove = removeBox
+
+--- Abre el contenido de la caja al admin (sin importar la distancia)
+function M.open(source, id)
+    if not boxes[id] then return false end
+    return exports.ox_inventory:forceOpenInventory(source, 'stash', id) ~= nil
+end
+
+
+return M
