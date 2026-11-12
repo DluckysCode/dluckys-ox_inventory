@@ -22,9 +22,9 @@ return {
 
     maxQueue = 10, -- máximo de crafteos en cola por jugador
 
-    -- TIPOS DE MESA. Para colocarlas, moverlas, añadir más o eliminarlas usa /inventory en el juego.
+    -- TIPOS DE MESA. Para colocarlas, moverlas, añadir más o eliminarlas usa /admininventory en el juego.
     -- coords   = vec4(x, y, z, rotación) -> solo la posición inicial (la primera vez que arranca);
-    --            después manda lo que hagas con /inventory (se guarda en el servidor)
+    --            después manda lo que hagas con /admininventory (se guarda en el servidor)
     -- level    = nivel de la mesa (desbloquea recetas con level <= este)
     -- repair   = true: permite reparar armas/herramientas aquí
     -- recycler = true: permite reciclar items aquí

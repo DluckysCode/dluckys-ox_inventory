@@ -9,7 +9,7 @@ local crafting = lib.load('data.rust_crafting') or {}
 local nodes, byId = {}, {}
 local starts = {} -- starts[src] = { id, at = GetGameTimer() }
 
--- Puntos colocados con /inventory, guardados en KVP: { [id] = { t, x, y, z } }
+-- Puntos colocados con /admininventory, guardados en KVP: { [id] = { t, x, y, z } }
 local ADMIN_KVP = 'rustloot:points'
 local adminPoints = json.decode(GetResourceKvpString(ADMIN_KVP) or '{}') or {}
 
@@ -141,7 +141,7 @@ end)
 AddEventHandler('playerDropped', function() starts[source] = nil end)
 
 ---------------------------------------------------------------------
--- Puntos colocados por admins (/inventory)
+-- Puntos colocados por admins (/admininventory)
 ---------------------------------------------------------------------
 local M = {}
 

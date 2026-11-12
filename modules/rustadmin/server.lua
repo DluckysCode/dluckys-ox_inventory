@@ -1,15 +1,15 @@
 if not lib then return end
 
--- /inventory: panel de admin para colocar / mover / eliminar mesas y puntos de botín en 3D
+-- /admininventory: panel de admin para colocar / mover / eliminar mesas y puntos de botín en 3D
 local Bench = require 'modules.rustbench.server'
 local Loot = require 'modules.rustloot.server'
 
--- lib.addCommand con restricted da el permiso "command.inventory" al grupo admin
-local function isAdmin(src) return IsPlayerAceAllowed(src, 'command.inventory') end
+-- lib.addCommand con restricted da el permiso "command.admininventory" al grupo admin
+local function isAdmin(src) return IsPlayerAceAllowed(src, 'command.admininventory') end
 
 local function isNum(n) return type(n) == 'number' and n == n and math.abs(n) < 100000 end
 
-lib.addCommand('inventory', {
+lib.addCommand('admininventory', {
     help = 'Colocar, mover o eliminar mesas y botín (admin)',
     restricted = 'group.admin',
 }, function(source)

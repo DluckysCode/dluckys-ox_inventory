@@ -84,7 +84,7 @@ local function removePoint(id)
     points[id] = nil
 end
 
--- Puntos que un admin añade, mueve o elimina con /inventory
+-- Puntos que un admin añade, mueve o elimina con /admininventory
 RegisterNetEvent('ox_inventory:rustLootAdd', function(id, node)
     removePoint(id)
     addPoint(id, node)

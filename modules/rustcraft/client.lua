@@ -62,7 +62,7 @@ end)
 
 ---------------------------------------------------------------------
 -- Mesas de trabajo: blip + objeto local cuando estás cerca.
--- La lista viene del servidor (GlobalState.rustBenches) y cambia en vivo con /inventory.
+-- La lista viene del servidor (GlobalState.rustBenches) y cambia en vivo con /admininventory.
 ---------------------------------------------------------------------
 local placed = {} -- [id] = { point, blip }
 

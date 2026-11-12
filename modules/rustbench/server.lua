@@ -1,7 +1,7 @@
 if not lib then return end
 
 -- Mesas colocadas en el mundo. Los "tipos" vienen de data/rust_crafting.lua (benches);
--- las posiciones se guardan en KVP para poder moverlas/añadirlas con /inventory sin reiniciar.
+-- las posiciones se guardan en KVP para poder moverlas/añadirlas con /admininventory sin reiniciar.
 
 local config = lib.load('data.rust_crafting') or {}
 local KVP = 'rustbench:data'

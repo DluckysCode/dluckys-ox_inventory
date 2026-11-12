@@ -1,6 +1,6 @@
 if not lib then return end
 
--- /inventory: panel de admin + modo para colocar objetos en 3D
+-- /admininventory: panel de admin + modo para colocar objetos en 3D
 local lootTypes = lib.load('data.rust_loot').types
 local data -- última respuesta del servidor (mesas, tipos, puntos)
 
