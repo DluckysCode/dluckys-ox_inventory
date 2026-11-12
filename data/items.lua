@@ -78,7 +78,6 @@ return {
 		stack = false,
 		close = true,
 		description = 'Úsalo para aprender una receta de crafteo.',
-		client = { image = 'blueprint.svg' },
 		server = { export = 'ox_inventory.rustLearnBlueprint' },
 	},
 
@@ -88,7 +87,6 @@ return {
 		stack = true,
 		close = true,
 		description = 'Úsala para colocarla delante de ti y guardar cosas.',
-		client = { image = 'caja_madera.svg' },
 		server = { export = 'ox_inventory.rustPlaceBox' },
 	},
 
@@ -97,7 +95,6 @@ return {
 		weight = 20,
 		stack = true,
 		description = 'Material básico. Se usa para craftear vendas.',
-		client = { image = 'cloth.svg' },
 	},
 
 	['black_money'] = {

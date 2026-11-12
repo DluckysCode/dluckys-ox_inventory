@@ -115,7 +115,6 @@ local function makeMetadata(slot, gender, data)
         gender = gender,
         comps = data.comps,
         props = data.props,
-        imageurl = ('nui://ox_inventory/web/images/clothes/%s.svg'):format(slot.id),
         description = ('%s · %s'):format(slot.label, gender == 'male' and 'Hombre' or 'Mujer'),
     }
 end

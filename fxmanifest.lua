@@ -39,7 +39,6 @@ files {
     'web/build/index.html',
     'web/build/assets/*.js',
     'web/build/assets/*.css',
-    'web/images/*.svg',
     'web/images/clothes/*.svg',
     'web/images/*.png',
     'modules/**/shared.lua',
