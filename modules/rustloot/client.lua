@@ -76,6 +76,21 @@ local function requestList()
 end
 requestList()
 
+local function removePoint(id)
+    local p = points[id]
+    if not p then return end
+    despawn(p)
+    p:remove()
+    points[id] = nil
+end
+
+-- Puntos que un admin añade, mueve o elimina con /inventory
+RegisterNetEvent('ox_inventory:rustLootAdd', function(id, node)
+    removePoint(id)
+    addPoint(id, node)
+end)
+RegisterNetEvent('ox_inventory:rustLootRemove', removePoint)
+
 RegisterNetEvent('ox_inventory:rustLootState', function(id, ready)
     local p = points[id]
     if not p then return end
@@ -89,5 +104,5 @@ end)
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= cache.resource then return end
-    for _, p in pairs(points) do despawn(p) end
+    for id in pairs(points) do removePoint(id) end
 end)

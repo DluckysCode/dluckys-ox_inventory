@@ -1,12 +1,17 @@
 if not lib then return end
 
 local Inventory = require 'modules.inventory.server'
+local Bench = require 'modules.rustbench.server'
 local config = lib.load('data.rust_loot')
 local crafting = lib.load('data.rust_crafting') or {}
 
--- Nodos: [id] = { id, t = tipo, x, y, z, ready = bool, readyAt = os.time() }
-local nodes = {}
+-- Nodos: { id, t = tipo, x, y, z, ready = bool, readyAt = os.time(), admin = bool }
+local nodes, byId = {}, {}
 local starts = {} -- starts[src] = { id, at = GetGameTimer() }
+
+-- Puntos colocados con /inventory, guardados en KVP: { [id] = { t, x, y, z } }
+local ADMIN_KVP = 'rustloot:points'
+local adminPoints = json.decode(GetResourceKvpString(ADMIN_KVP) or '{}') or {}
 
 -- Recetas con plano, para los planos al azar
 local blueprintRecipes = {}
@@ -14,16 +19,21 @@ for _, r in ipairs(crafting.recipes or {}) do
     if r.blueprint then blueprintRecipes[#blueprintRecipes + 1] = r.name end
 end
 
-local function addNode(t, x, y, z)
-    local id = ('n%d'):format(#nodes + 1)
-    nodes[#nodes + 1] = { id = id, t = t, x = x, y = y, z = z, ready = true }
+local function view(n) return { t = n.t, x = n.x, y = n.y, z = n.z, r = n.ready } end
+
+local function addNode(t, x, y, z, id, admin)
+    id = id or ('n%d'):format(#nodes + 1)
+    local n = { id = id, t = t, x = x, y = y, z = z, ready = true, admin = admin }
+    nodes[#nodes + 1] = n
+    byId[id] = n
+    return n
 end
 
 --- ¿Está (x, y) a la distancia mínima de las mesas y de los otros nodos?
 local spacing = config.minSpacing or 4.0
 local function freeSpot(x, y)
-    for _, b in ipairs(crafting.benches or {}) do
-        if #(vec2(x, y) - b.coords.xy) < spacing then return false end
+    for _, b in ipairs(Bench.list()) do
+        if #(vec2(x, y) - vec2(b.x, b.y)) < spacing then return false end
     end
     for _, n in ipairs(nodes) do
         if #(vec2(x, y) - vec2(n.x, n.y)) < spacing then return false end
@@ -31,9 +41,17 @@ local function freeSpot(x, y)
     return true
 end
 
+-- Primero los puntos fijos (admin y config), después las zonas al azar respetando la distancia
+for id, p in pairs(adminPoints) do
+    if config.types[p.t] then addNode(p.t, p.x, p.y, p.z, id, true) end
+end
 for _, spawn in ipairs(config.spawns or {}) do
     if config.types[spawn.type] then
         for _, p in ipairs(spawn.points or {}) do addNode(spawn.type, p.x, p.y, p.z) end
+    end
+end
+for _, spawn in ipairs(config.spawns or {}) do
+    if config.types[spawn.type] then
         for _, zone in ipairs(spawn.zones or {}) do
             for _ = 1, zone.count or 1 do
                 -- hasta 20 intentos de encontrar un lugar libre; si no hay, se salta ese nodo
@@ -51,13 +69,10 @@ for _, spawn in ipairs(config.spawns or {}) do
     end
 end
 
-local byId = {}
-for _, n in ipairs(nodes) do byId[n.id] = n end
-
---- Lista completa (solo al entrar): { [id] = { t, x, y, z, r = disponible } }
+--- Lista completa (solo al entrar)
 lib.callback.register('ox_inventory:rustLootList', function()
     local list = {}
-    for _, n in ipairs(nodes) do list[n.id] = { t = n.t, x = n.x, y = n.y, z = n.z, r = n.ready } end
+    for _, n in ipairs(nodes) do list[n.id] = view(n) end
     return list
 end)
 
@@ -124,3 +139,66 @@ lib.callback.register('ox_inventory:rustLootFinish', function(source, id)
 end)
 
 AddEventHandler('playerDropped', function() starts[source] = nil end)
+
+---------------------------------------------------------------------
+-- Puntos colocados por admins (/inventory)
+---------------------------------------------------------------------
+local M = {}
+
+local function saveAdmin() SetResourceKvp(ADMIN_KVP, json.encode(adminPoints)) end
+
+local function removeNode(id)
+    for i, n in ipairs(nodes) do
+        if n.id == id then
+            table.remove(nodes, i)
+            break
+        end
+    end
+    byId[id] = nil
+    TriggerClientEvent('ox_inventory:rustLootRemove', -1, id)
+end
+
+function M.types()
+    local list = {}
+    for id, t in pairs(config.types) do list[#list + 1] = { id = id, label = t.label } end
+    return list
+end
+
+function M.points()
+    local list = {}
+    for _, n in ipairs(nodes) do
+        if n.admin then
+            list[#list + 1] = { id = n.id, t = n.t, label = config.types[n.t].label, x = n.x, y = n.y, z = n.z }
+        end
+    end
+    return list
+end
+
+function M.add(t, x, y, z)
+    if not config.types[t] then return false end
+    local id = ('p%d%d'):format(os.time(), math.random(100, 999))
+    adminPoints[id] = { t = t, x = x, y = y, z = z }
+    saveAdmin()
+    TriggerClientEvent('ox_inventory:rustLootAdd', -1, id, view(addNode(t, x, y, z, id, true)))
+    return true
+end
+
+function M.move(id, x, y, z)
+    local p = adminPoints[id]
+    if not p then return false end
+    p.x, p.y, p.z = x, y, z
+    saveAdmin()
+    removeNode(id)
+    TriggerClientEvent('ox_inventory:rustLootAdd', -1, id, view(addNode(p.t, x, y, z, id, true)))
+    return true
+end
+
+function M.remove(id)
+    if not adminPoints[id] then return false end
+    adminPoints[id] = nil
+    saveAdmin()
+    removeNode(id)
+    return true
+end
+
+return M

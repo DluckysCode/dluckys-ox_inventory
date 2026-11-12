@@ -46,13 +46,17 @@ end
 ---------------------------------------------------------------------
 -- Mesas
 ---------------------------------------------------------------------
-local benches = {}
-for _, b in ipairs(config.benches or {}) do benches[b.id] = b end
+local Bench = require 'modules.rustbench.server'
 
---- Qué mesas tiene cerca el jugador: { ids = {id=true}, level = n, repair = bool, recycler = bool }
+--- Qué mesas tiene cerca el jugador: { ids = {tipo=true}, level = n, repair = bool, recycler = bool }
 local sharedBenchState = require 'modules.rustutil.shared'.benchState
 local function benchState(source)
-    return sharedBenchState(config.benches, GetEntityCoords(GetPlayerPed(source)))
+    return sharedBenchState(Bench.list(), GetEntityCoords(GetPlayerPed(source)))
+end
+
+local function benchLabel(id)
+    local t = id and Bench.template(id)
+    return t and t.label or id
 end
 
 ---------------------------------------------------------------------
@@ -79,8 +83,7 @@ local function canUse(source, recipe, state, learned)
     if not hasGroup(source, recipe.groups) then return false, 'No puedes craftear esto' end
     if recipe.blueprint and not learned[recipe.name] then return false, 'Necesitas aprender el plano' end
     if recipe.bench and not state.ids[recipe.bench] then
-        local b = benches[recipe.bench]
-        return false, ('Necesitas estar cerca de: %s'):format(b and b.label or recipe.bench)
+        return false, ('Necesitas estar cerca de: %s'):format(benchLabel(recipe.bench))
     end
     if recipe.level and state.level < recipe.level then
         return false, ('Necesitas una mesa de nivel %d'):format(recipe.level)
@@ -106,7 +109,7 @@ local function buildUiData()
             category = r.category or 'items',
             ingredients = toList(r.ingredients),
             bench = r.bench,
-            benchLabel = r.bench and benches[r.bench] and benches[r.bench].label or r.bench,
+            benchLabel = benchLabel(r.bench),
             level = r.level,
             blueprint = r.blueprint == true,
         }

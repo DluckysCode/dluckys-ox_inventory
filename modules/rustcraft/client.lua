@@ -2,7 +2,6 @@ if not lib then return end
 
 local util = require 'modules.rustutil.client'
 local benchState = require 'modules.rustutil.shared'.benchState
-local config = lib.load('data.rust_crafting') or {}
 
 --- Sonidos del juego (no necesitan archivos)
 local sounds = {
@@ -52,7 +51,7 @@ util.onInventory(function(open)
     if not open then return end
     local last
     while util.isInventoryOpen() do
-        local state = benchState(config.benches, GetEntityCoords(cache.ped))
+        local state = benchState(GlobalState.rustBenches, GetEntityCoords(cache.ped))
         if not sameState(last, state) then
             last = state
             SendNUIMessage({ action = 'rustcraftBench', data = state })
@@ -62,13 +61,28 @@ util.onInventory(function(open)
 end)
 
 ---------------------------------------------------------------------
--- Mesas de trabajo: blip + objeto local cuando estás cerca
+-- Mesas de trabajo: blip + objeto local cuando estás cerca.
+-- La lista viene del servidor (GlobalState.rustBenches) y cambia en vivo con /inventory.
 ---------------------------------------------------------------------
-for _, bench in ipairs(config.benches or {}) do
-    local c = bench.coords
+local placed = {} -- [id] = { point, blip }
+
+local function removeBench(id)
+    local b = placed[id]
+    if not b then return end
+    if b.point then
+        util.deleteProp(b.point.object)
+        util.setText(b.point, false)
+        b.point:remove()
+    end
+    if b.blip then RemoveBlip(b.blip) end
+    placed[id] = nil
+end
+
+local function addBench(bench)
+    local entry = {}
 
     if bench.blip then
-        local blip = AddBlipForCoord(c.x, c.y, c.z)
+        local blip = AddBlipForCoord(bench.x, bench.y, bench.z)
         SetBlipSprite(blip, bench.blip.sprite or 566)
         SetBlipColour(blip, bench.blip.colour or 31)
         SetBlipScale(blip, bench.blip.scale or 0.7)
@@ -76,15 +90,16 @@ for _, bench in ipairs(config.benches or {}) do
         BeginTextCommandSetBlipName('STRING')
         AddTextComponentSubstringPlayerName(bench.label)
         EndTextCommandSetBlipName(blip)
+        entry.blip = blip
     end
 
     if bench.model then
         local text = ('[TAB] %s'):format(bench.label)
-        lib.points.new({
-            coords = c.xyz,
+        entry.point = lib.points.new({
+            coords = vec3(bench.x, bench.y, bench.z),
             distance = 60,
             onEnter = function(self)
-                self.object = util.spawnProp(bench.model, c.x, c.y, c.z, c.w)
+                self.object = util.spawnProp(bench.model, bench.x, bench.y, bench.z, bench.h)
             end,
             onExit = function(self)
                 util.deleteProp(self.object)
@@ -96,4 +111,18 @@ for _, bench in ipairs(config.benches or {}) do
             end,
         })
     end
+
+    placed[bench.id] = entry
 end
+
+local function syncBenches(list)
+    for id in pairs(placed) do removeBench(id) end
+    for _, bench in ipairs(list or {}) do addBench(bench) end
+end
+
+AddStateBagChangeHandler('rustBenches', 'global', function(_, _, value) syncBenches(value) end)
+CreateThread(function() syncBenches(GlobalState.rustBenches) end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res == cache.resource then syncBenches({}) end
+end)
