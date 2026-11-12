@@ -14,4 +14,5 @@ return {
     maxPerPlayer = 5,      -- cajas máximas por personaje
     ownerOnly = false,     -- true = solo el dueño puede abrirla; false = cualquiera (como en Rust)
     interactDistance = 2.0,
+    abandonDays = 14,      -- si el dueño no se conecta en estos días, su caja y lo que tenga se borran (0 = nunca)
 }

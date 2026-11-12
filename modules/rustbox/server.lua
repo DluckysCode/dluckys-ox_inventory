@@ -19,10 +19,62 @@ local function register(box)
         config.ownerOnly and box.owner or nil, nil, vec3(box.x, box.y, box.z))
 end
 
+---------------------------------------------------------------------
+-- Limpieza: si el dueño no se conecta en X días, su caja desaparece
+---------------------------------------------------------------------
+local SEEN_KVP = 'rustbox:seen'
+local seen = json.decode(GetResourceKvpString(SEEN_KVP) or '{}') or {}
+
+local function markSeen(owner)
+    if not owner then return end
+    seen[owner] = os.time()
+    SetResourceKvp(SEEN_KVP, json.encode(seen))
+end
+
+local function cleanup()
+    local days = config.abandonDays or 0
+    if days <= 0 then return end
+
+    local limit, removed = os.time() - days * 86400, 0
+    for id, box in pairs(boxes) do
+        if (seen[box.owner] or 0) < limit then
+            exports.ox_inventory:ClearInventory(id)
+            boxes[id] = nil
+            removed += 1
+        end
+    end
+    if removed > 0 then
+        save()
+        print(('[rustbox] Se quitaron %d cajas abandonadas (dueño sin conectarse %d días)'):format(removed, days))
+    end
+end
+
+-- Al entrar con el personaje se marca que el dueño sigue activo
+RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
+    local src = source
+    SetTimeout(5000, function()
+        local inv = Inventory(src)
+        if inv then markSeen(inv.owner) end
+    end)
+end)
+
 CreateThread(function()
     while not shared.ready do Wait(100) end
+
+    -- Cajas que no tienen fecha (de antes de esta función) cuentan desde hoy
+    for _, box in pairs(boxes) do
+        if box.owner and not seen[box.owner] then seen[box.owner] = os.time() end
+    end
+    SetResourceKvp(SEEN_KVP, json.encode(seen))
+
+    cleanup()
     for _, box in pairs(boxes) do register(box) end
     GlobalState.rustBoxes = boxes
+
+    while true do
+        Wait(3600000) -- revisa cada hora
+        cleanup()
+    end
 end)
 
 local function countOwned(owner)
@@ -67,6 +119,7 @@ exports('rustPlaceBox', function(event, item, inventory)
     boxes[id] = box
     register(box)
     save()
+    markSeen(owner)
     return true -- se consume el item
 end)
 
