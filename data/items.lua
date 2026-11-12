@@ -81,6 +81,24 @@ return {
 		server = { export = 'ox_inventory.rustLearnBlueprint' },
 	},
 
+	['mochila_pequena'] = {
+		label = 'Mochila pequeña',
+		weight = 1000,
+		stack = false,
+		close = true,
+		description = 'Ponla en el slot Mochila: +10 slots. Úsala para ver lo que tiene dentro.',
+		server = { export = 'ox_inventory.rustOpenBackpack' },
+	},
+
+	['mochila_grande'] = {
+		label = 'Mochila grande',
+		weight = 2000,
+		stack = false,
+		close = true,
+		description = 'Ponla en el slot Mochila: +20 slots. Úsala para ver lo que tiene dentro.',
+		server = { export = 'ox_inventory.rustOpenBackpack' },
+	},
+
 	['caja_madera'] = {
 		label = 'Caja de madera',
 		weight = 5000,

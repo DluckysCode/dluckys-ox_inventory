@@ -29,14 +29,13 @@ return {
         { id = 'vest',      label = 'Chaleco',   comp = 9,  side = 'left' },
         { id = 'accessory', label = 'Accesorio', comp = 7,  side = 'right' },
         { id = 'legs',      label = 'Pantalón',  comp = 4,  side = 'left' },
-        { id = 'bag',       label = 'Mochila',   comp = 5,  side = 'right' },
         { id = 'shoes',     label = 'Zapatos',   comp = 6,  side = 'left' },
         { id = 'glasses',   label = 'Lentes',    prop = 1,  side = 'right' },
     },
 
     -- Valores "sin ropa" por componente. Si alguno se ve raro en tu servidor, cámbialo aquí.
     naked = {
-        male   = { [1] = 0, [3] = 15, [4] = 61, [5] = 0, [6] = 34, [7] = 0, [8] = 15, [9] = 0, [11] = 15 },
-        female = { [1] = 0, [3] = 15, [4] = 14, [5] = 0, [6] = 35, [7] = 0, [8] = 14, [9] = 0, [11] = 15 },
+        male   = { [1] = 0, [3] = 15, [4] = 61, [6] = 34, [7] = 0, [8] = 15, [9] = 0, [11] = 15 },
+        female = { [1] = 0, [3] = 15, [4] = 14, [6] = 35, [7] = 0, [8] = 14, [9] = 0, [11] = 15 },
     },
 }
