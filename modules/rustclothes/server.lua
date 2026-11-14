@@ -115,6 +115,7 @@ local function makeMetadata(slot, gender, data)
         gender = gender,
         comps = data.comps,
         props = data.props,
+        image = slot.image, -- web/images/<image>.png; sin image se usa prenda.png
         description = ('%s · %s'):format(slot.label, gender == 'male' and 'Hombre' or 'Mujer'),
     }
 end

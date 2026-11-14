@@ -3,6 +3,7 @@
 -- prop  = prop de GTA (SetPedPropIndex)
 -- extra = componentes que se guardan junto con la prenda (ej. brazos con la chaqueta)
 -- side  = columna donde se muestra (left / right)
+-- image = (opcional) imagen del item al quitártela: web/images/<image>.png (sin image = prenda.png)
 
 return {
     item = 'prenda', -- item de data/items.lua que representa una prenda
@@ -22,15 +23,15 @@ return {
     },
 
     slots = {
-        { id = 'hat',       label = 'Cabeza',    prop = 0,  side = 'left' },
-        { id = 'mask',      label = 'Máscara',   comp = 1,  side = 'right' },
-        { id = 'jacket',    label = 'Torso',     comp = 11, extra = { 3 }, side = 'left' },
-        { id = 'shirt',     label = 'Interior',  comp = 8,  side = 'right' },
+        { id = 'hat',       label = 'Cabeza',    prop = 0,  side = 'left',  image = 'prenda_sombrero' },
+        { id = 'mask',      label = 'Máscara',   comp = 1,  side = 'right', image = 'prenda_mascara' },
+        { id = 'jacket',    label = 'Torso',     comp = 11, extra = { 3 }, side = 'left', image = 'prenda_camisa' },
+        { id = 'shirt',     label = 'Interior',  comp = 8,  side = 'right', image = 'prenda_camisa' },
         { id = 'vest',      label = 'Chaleco',   comp = 9,  side = 'left' },
         { id = 'accessory', label = 'Accesorio', comp = 7,  side = 'right' },
-        { id = 'legs',      label = 'Pantalón',  comp = 4,  side = 'left' },
-        { id = 'shoes',     label = 'Zapatos',   comp = 6,  side = 'left' },
-        { id = 'glasses',   label = 'Lentes',    prop = 1,  side = 'right' },
+        { id = 'legs',      label = 'Pantalón',  comp = 4,  side = 'left',  image = 'prenda_pantalon' },
+        { id = 'shoes',     label = 'Zapatos',   comp = 6,  side = 'left',  image = 'prenda_zapatos' },
+        { id = 'glasses',   label = 'Lentes',    prop = 1,  side = 'right', image = 'prenda_lentes' },
     },
 
     -- Valores "sin ropa" por componente. Si alguno se ve raro en tu servidor, cámbialo aquí.
