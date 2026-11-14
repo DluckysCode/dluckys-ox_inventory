@@ -34,6 +34,12 @@ function M.setText(point, show, text, icon)
     if show then lib.showTextUI(text, { icon = icon }) else lib.hideTextUI() end
 end
 
+--- true si lo abierto es solo tu inventario (o el suelo): ahí salen la cámara y la ropa
+function M.isPersonal()
+    local t = M.rightType
+    return not t or t == 'newdrop' or t == 'drop'
+end
+
 --- Avisa a los módulos cuando el inventario se abre o se cierra (fn(abierto))
 local listeners, open = {}, false
 

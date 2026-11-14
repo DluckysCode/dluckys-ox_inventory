@@ -274,6 +274,7 @@ function client.openInventory(inv, data)
         end
     end
 
+	require 'modules.rustutil.client'.rightType = right and right.type
 	client.player:set('invOpen', true)
 
     SetInterval(client.interval, 100)
@@ -331,6 +332,7 @@ exports('openInventory', client.openInventory)
 RegisterNetEvent('ox_inventory:forceOpenInventory', function(left, right)
 	if source == '' then return end
 
+	require 'modules.rustutil.client'.rightType = right and right.type
 	client.player:set('invOpen', true)
 
 	SetInterval(client.interval, 100)
@@ -1587,6 +1589,7 @@ end)
 RegisterNetEvent('ox_inventory:viewInventory', function(left, right)
 	if source == '' then return end
 
+	require 'modules.rustutil.client'.rightType = right and right.type
 	client.player:set('invOpen', true)
 	SetInterval(client.interval, 100)
 	SetNuiFocus(true, true)

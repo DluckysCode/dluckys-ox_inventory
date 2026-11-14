@@ -174,8 +174,10 @@ local function stopCam()
     camHandle = nil
 end
 
-require 'modules.rustutil.client'.onInventory(function(open)
+local util = require 'modules.rustutil.client'
+util.onInventory(function(open)
     if not open then return stopCam() end
+    if not util.isPersonal() then return end -- tienda, carro, dumpster, otro jugador: sin cámara
     startCam()
     sendClothing()
 end)
