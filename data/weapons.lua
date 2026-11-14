@@ -2,6 +2,7 @@ return {
 	Weapons = {
 		['WEAPON_BATTLERIFLE'] = {
 			label = 'Battle Rifle',
+			rarity = 'epic',
 			weight = 3300,
 			durability = 0.03,
 			ammoname = 'ammo-rifle2',
@@ -16,6 +17,7 @@ return {
 
 		['WEAPON_TECPISTOL'] = {
 			label = 'Tactical SMG',
+			rarity = 'rare',
 			weight = 1500,
 			durability = 0.075,
 			ammoname = 'ammo-9',
@@ -23,6 +25,7 @@ return {
 
 		['WEAPON_ADVANCEDRIFLE'] = {
 			label = 'Advanced Rifle',
+			rarity = 'epic',
 			weight = 3100,
 			durability = 0.03,
 			ammoname = 'ammo-rifle',
@@ -30,6 +33,7 @@ return {
 
 		['WEAPON_APPISTOL'] = {
 			label = 'AP Pistol',
+			rarity = 'rare',
 			weight = 1400,
 			durability = 0.1,
 			ammoname = 'ammo-9',
@@ -37,6 +41,7 @@ return {
 
 		['WEAPON_ASSAULTRIFLE'] = {
 			label = 'Assault Rifle',
+			rarity = 'epic',
 			weight = 4500,
 			durability = 0.03,
 			ammoname = 'ammo-rifle2',
@@ -44,6 +49,7 @@ return {
 
 		['WEAPON_ASSAULTRIFLE_MK2'] = {
 			label = 'Assault Rifle MK2',
+			rarity = 'epic',
 			weight = 2950,
 			durability = 0.03,
 			ammoname = 'ammo-rifle2',
@@ -51,6 +57,7 @@ return {
 
 		['WEAPON_ASSAULTSHOTGUN'] = {
 			label = 'Assault Shotgun',
+			rarity = 'rare',
 			weight = 5200,
 			durability = 0.05,
 			ammoname = 'ammo-shotgun'
@@ -58,6 +65,7 @@ return {
 
 		['WEAPON_ASSAULTSMG'] = {
 			label = 'Assault SMG',
+			rarity = 'rare',
 			weight = 2900,
 			durability = 0.05,
 			ammoname = 'ammo-rifle'
@@ -89,6 +97,7 @@ return {
 
 		['WEAPON_BULLPUPRIFLE'] = {
 			label = 'Bullpup Rifle',
+			rarity = 'epic',
 			weight = 2900,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -96,6 +105,7 @@ return {
 
 		['WEAPON_BULLPUPRIFLE_MK2'] = {
 			label = 'Bullpup Rifle MK2',
+			rarity = 'epic',
 			weight = 2900,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -103,6 +113,7 @@ return {
 
 		['WEAPON_BULLPUPSHOTGUN'] = {
 			label = 'Bullpup Shotgun',
+			rarity = 'rare',
 			weight = 3100,
 			durability = 0.2,
 			ammoname = 'ammo-shotgun'
@@ -110,12 +121,14 @@ return {
 
 		['WEAPON_BZGAS'] = {
 			label = 'BZ Gas',
+			rarity = 'uncommon',
 			weight = 600,
 			throwable = true,
 		},
 
 		['WEAPON_CARBINERIFLE'] = {
 			label = 'Carbine Rifle',
+			rarity = 'epic',
 			weight = 3100,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -123,6 +136,7 @@ return {
 
 		['WEAPON_CARBINERIFLE_MK2'] = {
 			label = 'Carbine Rifle MK2',
+			rarity = 'epic',
 			weight = 3000,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -130,6 +144,7 @@ return {
 
 		['WEAPON_CERAMICPISTOL'] = {
 			label = 'Ceramic Pistol',
+			rarity = 'uncommon',
 			weight = 800,
 			durability = 0.2,
 			ammoname = 'ammo-9'
@@ -137,6 +152,7 @@ return {
 
 		['WEAPON_PISTOLXM3'] = {
 			label = 'WM 29 Pistol',
+			rarity = 'uncommon',
 			weight = 969,
 			durability = 0.2,
 			ammoname = 'ammo-9'
@@ -144,6 +160,7 @@ return {
 
 		['WEAPON_COMBATMG'] = {
 			label = 'Combat MG',
+			rarity = 'legendary',
 			weight = 7500,
 			durability = 0.02,
 			ammoname = 'ammo-rifle'
@@ -151,6 +168,7 @@ return {
 
 		['WEAPON_COMBATMG_MK2'] = {
 			label = 'Combat MG MK2',
+			rarity = 'legendary',
 			weight = 8000,
 			durability = 0.02,
 			ammoname = 'ammo-rifle2'
@@ -158,6 +176,7 @@ return {
 
 		['WEAPON_COMBATPDW'] = {
 			label = 'Combat PDW',
+			rarity = 'rare',
 			weight = 2300,
 			durability = 0.1,
 			ammoname = 'ammo-9'
@@ -165,6 +184,7 @@ return {
 
 		['WEAPON_COMBATPISTOL'] = {
 			label = 'Combat Pistol',
+			rarity = 'uncommon',
 			weight = 785,
 			durability = 0.2,
 			ammoname = 'ammo-9'
@@ -172,6 +192,7 @@ return {
 
 		['WEAPON_COMBATSHOTGUN'] = {
 			label = 'Combat Shotgun',
+			rarity = 'rare',
 			weight = 4400,
 			durability = 0.2,
 			ammoname = 'ammo-shotgun'
@@ -179,6 +200,7 @@ return {
 
 		['WEAPON_COMPACTLAUNCHER'] = {
 			label = 'Compact Grenade Launcher',
+			rarity = 'legendary',
 			weight = 2500,
 			durability = 0.05,
 			ammoname = 'ammo-grenade'
@@ -186,6 +208,7 @@ return {
 
 		['WEAPON_COMPACTRIFLE'] = {
 			label = 'Compact Rifle',
+			rarity = 'epic',
 			weight = 3600,
 			durability = 0.05,
 			ammoname = 'ammo-rifle2'
@@ -205,6 +228,7 @@ return {
 
 		['WEAPON_DBSHOTGUN'] = {
 			label = 'Double Barrel Shotgun',
+			rarity = 'uncommon',
 			weight = 3175,
 			durability = 0.4,
 			ammoname = 'ammo-shotgun'
@@ -212,6 +236,7 @@ return {
 
 		['WEAPON_DOUBLEACTION'] = {
 			label = 'Double Action Revolver',
+			rarity = 'rare',
 			weight = 940,
 			durability = 0.2,
 			ammoname = 'ammo-38'
@@ -219,6 +244,7 @@ return {
 
 		['WEAPON_EMPLAUNCHER'] = {
 			label = 'Compact EMP Launcher',
+			rarity = 'legendary',
 			weight = 2750,
 			durability = 0.2,
 			ammoname = 'ammo-emp'
@@ -245,6 +271,7 @@ return {
 
 		['WEAPON_FLAREGUN'] = {
 			label = 'Flare Gun',
+			rarity = 'uncommon',
 			weight = 1000,
 			durability = 0.5,
 			ammoname = 'ammo-flare'
@@ -264,12 +291,14 @@ return {
 
 		['WEAPON_GRENADE'] = {
 			label = 'Grenade',
+			rarity = 'epic',
 			weight = 400,
 			throwable = true,
 		},
 
 		['WEAPON_GRENADELAUNCHER'] = {
 			label = 'Grenade Launcher',
+			rarity = 'legendary',
 			weight = 6500,
 			durability = 0.05,
 			ammoname = 'ammo-grenade'
@@ -277,6 +306,7 @@ return {
 
 		['WEAPON_GUSENBERG'] = {
 			label = 'Gusenberg',
+			rarity = 'epic',
 			weight = 4900,
 			durability = 0.04,
 			ammoname = 'ammo-45'
@@ -296,6 +326,7 @@ return {
 
 		['WEAPON_HEAVYRIFLE'] = {
 			label = 'Heavy Rifle',
+			rarity = 'epic',
 			weight = 3300,
 			durability = 0.2,
 			ammoname = 'ammo-rifle'
@@ -313,6 +344,7 @@ return {
 
 		['WEAPON_HOMINGLAUNCHER'] = {
 			label = 'Homing Launcher',
+			rarity = 'legendary',
 			weight = 10000,
 			durability = 0.6,
 			ammoname = 'ammo-rocket'
@@ -325,6 +357,7 @@ return {
 
 		['WEAPON_HEAVYPISTOL'] = {
 			label = 'Heavy Pistol',
+			rarity = 'rare',
 			weight = 1100,
 			durability = 0.2,
 			ammoname = 'ammo-45'
@@ -332,6 +365,7 @@ return {
 
 		['WEAPON_HEAVYSHOTGUN'] = {
 			label = 'Heavy Shotgun',
+			rarity = 'rare',
 			weight = 3600,
 			durability = 0.1,
 			ammoname = 'ammo-shotgun'
@@ -339,6 +373,7 @@ return {
 
 		['WEAPON_HEAVYSNIPER'] = {
 			label = 'Heavy Sniper',
+			rarity = 'legendary',
 			weight = 12700,
 			durability = 0.5,
 			ammoname = 'ammo-heavysniper'
@@ -346,6 +381,7 @@ return {
 
 		['WEAPON_HEAVYSNIPER_MK2'] = {
 			label = 'Heavy Sniper MK2',
+			rarity = 'legendary',
 			weight = 14000,
 			durability = 0.5,
 			ammoname = 'ammo-heavysniper'
@@ -371,6 +407,7 @@ return {
 
 		['WEAPON_MACHINEPISTOL'] = {
 			label = 'Machine Pistol',
+			rarity = 'rare',
 			weight = 1400,
 			durability = 0.05,
 			ammoname = 'ammo-9'
@@ -378,6 +415,7 @@ return {
 
 		['WEAPON_MARKSMANPISTOL'] = {
 			label = 'Marksman Pistol',
+			rarity = 'rare',
 			weight = 1588,
 			durability = 0.5,
 			ammoname = 'ammo-22'
@@ -385,6 +423,7 @@ return {
 
 		['WEAPON_MARKSMANRIFLE'] = {
 			label = 'Marksman Rifle',
+			rarity = 'legendary',
 			weight = 7500,
 			durability = 0.4,
 			ammoname = 'ammo-sniper'
@@ -392,6 +431,7 @@ return {
 
 		['WEAPON_MARKSMANRIFLE_MK2'] = {
 			label = 'Marksman Rifle MK2',
+			rarity = 'legendary',
 			weight = 4000,
 			durability = 0.4,
 			ammoname = 'ammo-sniper'
@@ -399,6 +439,7 @@ return {
 
 		['WEAPON_MG'] = {
 			label = 'Machine Gun',
+			rarity = 'legendary',
 			weight = 9000,
 			durability = 0.02,
 			ammoname = 'ammo-rifle2'
@@ -406,6 +447,7 @@ return {
 
 		['WEAPON_MINIGUN'] = {
 			label = 'Minigun',
+			rarity = 'legendary',
 			weight = 38500,
 			durability = 0.1,
 			ammoname = 'ammo-rifle2'
@@ -413,6 +455,7 @@ return {
 
 		['WEAPON_MICROSMG'] = {
 			label = 'Micro SMG',
+			rarity = 'rare',
 			weight = 3000,
 			durability = 0.1,
 			ammoname = 'ammo-45'
@@ -420,6 +463,7 @@ return {
 
 		['WEAPON_MILITARYRIFLE'] = {
 			label = 'Military Rifle',
+			rarity = 'epic',
 			weight = 3600,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -427,6 +471,7 @@ return {
 
 		['WEAPON_MINISMG'] = {
 			label = 'Mini SMG',
+			rarity = 'rare',
 			weight = 1270,
 			durability = 0.05,
 			ammoname = 'ammo-9'
@@ -434,12 +479,14 @@ return {
 
 		['WEAPON_MOLOTOV'] = {
 			label = 'Molotov',
+			rarity = 'epic',
 			weight = 1800,
 			throwable = true,
 		},
 
 		['WEAPON_MUSKET'] = {
 			label = 'Musket',
+			rarity = 'uncommon',
 			weight = 4500,
 			durability = 0.5,
 			ammoname = 'ammo-musket'
@@ -447,6 +494,7 @@ return {
 
 		['WEAPON_NAVYREVOLVER'] = {
 			label = 'Navy Revolver',
+			rarity = 'rare',
 			weight = 4000,
 			durability = 0.2,
 			ammoname = 'ammo-44'
@@ -465,6 +513,7 @@ return {
 
 		['WEAPON_GADGETPISTOL'] = {
 			label = 'Perico Pistol',
+			rarity = 'uncommon',
 			weight = 1750,
 			durability = 0.1,
 			ammoname = 'ammo-9'
@@ -472,12 +521,14 @@ return {
 
 		['WEAPON_PIPEBOMB'] = {
 			label = 'Pipe Bomb',
+			rarity = 'epic',
 			weight = 1800,
 			throwable = true,
 		},
 
 		['WEAPON_PISTOL'] = {
 			label = 'Pistol',
+			rarity = 'uncommon',
 			weight = 1130,
 			durability = 0.1,
 			ammoname = 'ammo-9',
@@ -485,6 +536,7 @@ return {
 
 		['WEAPON_PISTOL50'] = {
 			label = 'Pistol .50',
+			rarity = 'rare',
 			weight = 2000,
 			durability = 0.1,
 			ammoname = 'ammo-50'
@@ -492,6 +544,7 @@ return {
 
 		['WEAPON_PISTOL_MK2'] = {
 			label = 'Pistol MK2',
+			rarity = 'uncommon',
 			weight = 1000,
 			durability = 0.5,
 			ammoname = 'ammo-9'
@@ -511,12 +564,14 @@ return {
 
 		['WEAPON_PROXMINE'] = {
 			label = 'Proximity Mine',
+			rarity = 'epic',
 			weight = 2500,
 			throwable = true,
 		},
 
 		['WEAPON_PUMPSHOTGUN'] = {
 			label = 'Pump Shotgun',
+			rarity = 'uncommon',
 			weight = 3400,
 			durability = 0.1,
 			ammoname = 'ammo-shotgun'
@@ -524,6 +579,7 @@ return {
 
 		['WEAPON_PUMPSHOTGUN_MK2'] = {
 			label = 'Pump Shotgun MK2',
+			rarity = 'uncommon',
 			weight = 3200,
 			durability = 0.1,
 			ammoname = 'ammo-shotgun'
@@ -531,6 +587,7 @@ return {
 
 		['WEAPON_RAILGUN'] = {
 			label = 'Railgun',
+			rarity = 'legendary',
 			weight = 3570,
 			durability = 0.5,
 			ammoname = 'ammo-railgun'
@@ -538,6 +595,7 @@ return {
 
 		['WEAPON_RAILGUNXM3'] = {
 			label = 'Railgun XM3',
+			rarity = 'legendary',
 			weight = 3570,
 			durability = 0.5,
 			ammoname = 'ammo-railgun'
@@ -545,6 +603,7 @@ return {
 
 		['WEAPON_RAYCARBINE'] = {
 			label = 'Unholy Hellbringer',
+			rarity = 'epic',
 			weight = 3620,
 			durability = 0.2,
 			ammoname = 'ammo-laser'
@@ -552,12 +611,14 @@ return {
 
 		['WEAPON_RAYPISTOL'] = {
 			label = 'Up-n-Atomizer',
+			rarity = 'rare',
 			weight = 1540,
 			durability = 0.5
 		},
 
 		['WEAPON_REVOLVER'] = {
 			label = 'Revolver',
+			rarity = 'rare',
 			weight = 2260,
 			durability = 0.1,
 			ammoname = 'ammo-44'
@@ -565,6 +626,7 @@ return {
 
 		['WEAPON_REVOLVER_MK2'] = {
 			label = 'Revolver MK2',
+			rarity = 'rare',
 			weight = 2600,
 			durability = 0.1,
 			ammoname = 'ammo-44'
@@ -572,6 +634,7 @@ return {
 
 		['WEAPON_RPG'] = {
 			label = 'RPG',
+			rarity = 'legendary',
 			weight = 5000,
 			durability = 0.3,
 			ammoname = 'ammo-rocket'
@@ -579,6 +642,7 @@ return {
 
 		['WEAPON_SAWNOFFSHOTGUN'] = {
 			label = 'Sawn Off Shotgun',
+			rarity = 'uncommon',
 			weight = 2380,
 			durability = 0.1,
 			ammoname = 'ammo-shotgun'
@@ -586,6 +650,7 @@ return {
 
 		['WEAPON_SMG'] = {
 			label = 'SMG',
+			rarity = 'rare',
 			weight = 3084,
 			durability = 0.8,
 			ammoname = 'ammo-9'
@@ -593,6 +658,7 @@ return {
 
 		['WEAPON_SMG_MK2'] = {
 			label = 'SMG Mk2',
+			rarity = 'rare',
 			weight = 2700,
 			durability = 0.05,
 			ammoname = 'ammo-9'
@@ -600,12 +666,14 @@ return {
 
 		['WEAPON_SMOKEGRENADE'] = {
 			label = 'Smoke Grenade',
+			rarity = 'uncommon',
 			weight = 600,
 			throwable = true,
 		},
 
 		['WEAPON_SNIPERRIFLE'] = {
 			label = 'Sniper Rifle',
+			rarity = 'legendary',
 			weight = 5000,
 			durability = 0.5,
 			ammoname = 'ammo-sniper'
@@ -619,6 +687,7 @@ return {
 
 		['WEAPON_SNSPISTOL'] = {
 			label = 'SNS Pistol',
+			rarity = 'uncommon',
 			weight = 465,
 			durability = 0.1,
 			ammoname = 'ammo-45'
@@ -626,6 +695,7 @@ return {
 
 		['WEAPON_SNSPISTOL_MK2'] = {
 			label = 'SNS Pistol MK2',
+			rarity = 'uncommon',
 			weight = 465,
 			durability = 0.1,
 			ammoname = 'ammo-45'
@@ -633,6 +703,7 @@ return {
 
 		['WEAPON_SPECIALCARBINE'] = {
 			label = 'Special Carbine',
+			rarity = 'epic',
 			weight = 3000,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -640,6 +711,7 @@ return {
 
 		['WEAPON_SPECIALCARBINE_MK2'] = {
 			label = 'Special Carbine MK2',
+			rarity = 'epic',
 			weight = 3370,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -647,6 +719,7 @@ return {
 
 		['WEAPON_STICKYBOMB'] = {
 			label = 'Sticky Bomb',
+			rarity = 'epic',
 			weight = 1000,
 			throwable = true,
 		},
@@ -659,12 +732,14 @@ return {
 
 		['WEAPON_STUNGUN'] = {
 			label = 'Tazer',
+			rarity = 'uncommon',
 			weight = 227,
 			durability = 0.1,
 		},
 
 		['WEAPON_AUTOSHOTGUN'] = {
 			label = 'Sweeper Shotgun',
+			rarity = 'rare',
 			weight = 4400,
 			durability = 0.05,
 			ammoname = 'ammo-shotgun'
@@ -679,6 +754,7 @@ return {
 
 		['WEAPON_VINTAGEPISTOL'] = {
 			label = 'Vintage Pistol',
+			rarity = 'uncommon',
 			weight = 700,
 			durability = 0.1,
 			ammoname = 'ammo-9'
@@ -686,6 +762,7 @@ return {
 
 		['WEAPON_RAYMINIGUN'] = {
 			label = 'Widowmaker',
+			rarity = 'legendary',
 			weight = 7000,
 			durability = 0.1,
 			ammoname = 'ammo-laser'
@@ -699,6 +776,7 @@ return {
 
 		['WEAPON_PRECISIONRIFLE'] = {
 			label = 'Precision Rifle',
+			rarity = 'legendary',
 			weight = 4800,
 			durability = 0.4,
 			ammoname = 'ammo-sniper'
@@ -706,6 +784,7 @@ return {
 
 		['WEAPON_TACTICALRIFLE'] = {
 			label = 'Tactical Rifle',
+			rarity = 'epic',
 			weight = 3400,
 			durability = 0.03,
 			ammoname = 'ammo-rifle'
@@ -713,6 +792,7 @@ return {
 
 		['WEAPON_TEARGAS'] = {
 			label = 'Tear Gas',
+			rarity = 'uncommon',
 			weight = 600,
 			throwable = true,
 		},
@@ -721,6 +801,7 @@ return {
 	Components = {
 		['at_flashlight'] = {
 			label = 'Tactical Flashlight',
+			rarity = 'uncommon',
 			weight = 120,
 			type = 'flashlight',
 			client = {
@@ -737,6 +818,7 @@ return {
 
 		['at_suppressor_light'] = {
 			label = 'Suppressor',
+			rarity = 'epic',
 			weight = 280,
 			type = 'muzzle',
 			client = {
@@ -753,6 +835,7 @@ return {
 
 		['at_suppressor_heavy'] = {
 			label = 'Tactical Suppressor',
+			rarity = 'epic',
 			weight = 280,
 			type = 'muzzle',
 			client = {
@@ -769,6 +852,7 @@ return {
 
 		['at_grip'] = {
 			label = 'Grip',
+			rarity = 'uncommon',
 			type = 'grip',
 			weight = 280,
 			client = {
@@ -782,6 +866,7 @@ return {
 
 		['at_barrel'] = {
 			label = 'Heavy Barrel',
+			rarity = 'uncommon',
 			type = 'barrel',
 			weight = 280,
 			client = {
@@ -801,6 +886,7 @@ return {
 
 		['at_clip_extended_pistol'] = {
 			label = 'Extended Pistol Clip',
+			rarity = 'rare',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -824,6 +910,7 @@ return {
 
 		['at_clip_extended_smg'] = {
 			label = 'Extended SMG Clip',
+			rarity = 'rare',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -843,6 +930,7 @@ return {
 
 		['at_clip_extended_shotgun'] = {
 			label = 'Extended Shotgun Clip',
+			rarity = 'rare',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -857,6 +945,7 @@ return {
 
 		['at_clip_extended_rifle'] = {
 			label = 'Extended Rifle Clip',
+			rarity = 'epic',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -883,6 +972,7 @@ return {
 
 		['at_clip_extended_mg'] = {
 			label = 'Extended MG Clip',
+			rarity = 'epic',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -899,6 +989,7 @@ return {
 
 		['at_clip_extended_sniper'] = {
 			label = 'Extended Sniper Clip',
+			rarity = 'epic',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -914,6 +1005,7 @@ return {
 
 		['at_clip_drum_smg'] = {
 			label = 'SMG Drum',
+			rarity = 'epic',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -929,6 +1021,7 @@ return {
 
 		['at_clip_drum_shotgun'] = {
 			label = 'Shotgun Drum',
+			rarity = 'epic',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -942,6 +1035,7 @@ return {
 
 		['at_clip_drum_rifle'] = {
 			label = 'Rifle Drum',
+			rarity = 'epic',
 			type = 'magazine',
 			weight = 280,
 			client = {
@@ -958,6 +1052,7 @@ return {
 
 		['at_compensator'] = {
 			label = 'Compensator',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 280,
 			client = {
@@ -972,6 +1067,7 @@ return {
 
 		['at_scope_macro'] = {
 			label = 'Macro Scope',
+			rarity = 'rare',
 			type = 'sight',
 			weight = 280,
 			client = {
@@ -988,6 +1084,7 @@ return {
 
 		['at_scope_small'] = {
 			label = 'Small Scope',
+			rarity = 'rare',
 			type = 'sight',
 			weight = 280,
 			client = {
@@ -1003,6 +1100,7 @@ return {
 
 		['at_scope_medium'] = {
 			label = 'Medium Scope',
+			rarity = 'rare',
 			type = 'sight',
 			weight = 280,
 			client = {
@@ -1016,6 +1114,7 @@ return {
 
 		['at_scope_large'] = {
 			label = 'Large Scope',
+			rarity = 'epic',
 			type = 'sight',
 			weight = 280,
 			client = {
@@ -1028,6 +1127,7 @@ return {
 
 		['at_scope_advanced'] = {
 			label = 'Advanced Scope',
+			rarity = 'epic',
 			type = 'sight',
 			weight = 280,
 			client = {
@@ -1040,6 +1140,7 @@ return {
 
 		['at_scope_nv'] = {
 			label = 'NV Scope',
+			rarity = 'epic',
 			type = 'sight',
 			weight = 420,
 			client = {
@@ -1052,6 +1153,7 @@ return {
 
 		['at_scope_thermal'] = {
 			label = 'Thermal Scope',
+			rarity = 'epic',
 			type = 'sight',
 			weight = 420,
 			client = {
@@ -1064,6 +1166,7 @@ return {
 
 		['at_scope_holo'] = {
 			label = 'Holographic Sight',
+			rarity = 'rare',
 			type = 'sight',
 			weight = 280,
 			client = {
@@ -1079,6 +1182,7 @@ return {
 
 		['at_muzzle_flat'] = {
 			label = 'Flat Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1091,6 +1195,7 @@ return {
 
 		['at_muzzle_tactical'] = {
 			label = 'Tactical Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1103,6 +1208,7 @@ return {
 
 		['at_muzzle_fat'] = {
 			label = 'Fat Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1115,6 +1221,7 @@ return {
 
 		['at_muzzle_precision'] = {
 			label = 'Precision Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1127,6 +1234,7 @@ return {
 
 		['at_muzzle_heavy'] = {
 			label = 'Heavy Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1139,6 +1247,7 @@ return {
 
 		['at_muzzle_slanted'] = {
 			label = 'Slanted Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1151,6 +1260,7 @@ return {
 
 		['at_muzzle_split'] = {
 			label = 'Split Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1163,6 +1273,7 @@ return {
 
 		['at_muzzle_squared'] = {
 			label = 'Squared Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1175,6 +1286,7 @@ return {
 
 		['at_muzzle_bell'] = {
 			label = 'Bell Muzzle',
+			rarity = 'rare',
 			type = 'muzzle',
 			weight = 80,
 			client = {
@@ -1187,6 +1299,7 @@ return {
 
 		['at_skin_luxe'] = {
 			label = 'Luxury Weapon Kit',
+			rarity = 'epic',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1208,6 +1321,7 @@ return {
 
 		['at_skin_wood'] = {
 			label = 'Wood Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1222,6 +1336,7 @@ return {
 
 		['at_skin_metal'] = {
 			label = 'Metal Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1238,6 +1353,7 @@ return {
 
 		['at_skin_pearl'] = {
 			label = 'Pearl Weapon Kit',
+			rarity = 'epic',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1250,6 +1366,7 @@ return {
 
 		['at_skin_ballas'] = {
 			label = 'Ballas Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1262,6 +1379,7 @@ return {
 
 		['at_skin_diamond'] = {
 			label = 'Diamond Weapon Kit',
+			rarity = 'epic',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1274,6 +1392,7 @@ return {
 
 		['at_skin_dollar'] = {
 			label = 'Dollar Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1286,6 +1405,7 @@ return {
 
 		['at_skin_hate'] = {
 			label = 'Hate Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1298,6 +1418,7 @@ return {
 
 		['at_skin_king'] = {
 			label = 'King Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1310,6 +1431,7 @@ return {
 
 		['at_skin_love'] = {
 			label = 'Love Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1322,6 +1444,7 @@ return {
 
 		['at_skin_pimp'] = {
 			label = 'Pimp Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1334,6 +1457,7 @@ return {
 
 		['at_skin_player'] = {
 			label = 'Player Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1346,6 +1470,7 @@ return {
 
 		['at_skin_vagos'] = {
 			label = 'Vagos Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1358,6 +1483,7 @@ return {
 
 		['at_skin_blagueurs'] = {
 			label = 'Blagueurs Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1370,6 +1496,7 @@ return {
 
 		['at_skin_splatter'] = {
 			label = 'Splatter Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1382,6 +1509,7 @@ return {
 
 		['at_skin_bulletholes'] = {
 			label = 'Bullet Holes Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1394,6 +1522,7 @@ return {
 
 		['at_skin_burgershot'] = {
 			label = 'Burger Shot Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1406,6 +1535,7 @@ return {
 
 		['at_skin_cluckinbell'] = {
 			label = 'Cluckin Bell Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1418,6 +1548,7 @@ return {
 
 		['at_skin_fatalincursion'] = {
 			label = 'Fatal Incursion Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1430,6 +1561,7 @@ return {
 
 		['at_skin_luchalibre'] = {
 			label = 'Lucha Libre Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1442,6 +1574,7 @@ return {
 
 		['at_skin_trippy'] = {
 			label = 'Trippy Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1454,6 +1587,7 @@ return {
 
 		['at_skin_tiedye'] = {
 			label = 'Tie-Dye Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1466,6 +1600,7 @@ return {
 
 		['at_skin_wall'] = {
 			label = 'Wall Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1478,6 +1613,7 @@ return {
 
 		['at_skin_vip'] = {
 			label = 'VIP Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1491,6 +1627,7 @@ return {
 
 		['at_skin_bodyguard'] = {
 			label = 'Bodyguard Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1504,6 +1641,7 @@ return {
 
 		['at_skin_festive'] = {
 			label = 'Festive Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1516,6 +1654,7 @@ return {
 
 		['at_skin_security'] = {
 			label = 'Security Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1529,6 +1668,7 @@ return {
 
 		['at_skin_camo'] = {
 			label = 'Camo Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1552,6 +1692,7 @@ return {
 
 		['at_skin_brushstroke'] = {
 			label = 'Brushstroke Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1575,6 +1716,7 @@ return {
 
 		['at_skin_woodland'] = {
 			label = 'Woodland Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1598,6 +1740,7 @@ return {
 
 		['at_skin_skull'] = {
 			label = 'Skull Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1621,6 +1764,7 @@ return {
 
 		['at_skin_sessanta'] = {
 			label = 'Sessanta Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1644,6 +1788,7 @@ return {
 
 		['at_skin_perseus'] = {
 			label = 'Perseus Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1667,6 +1812,7 @@ return {
 
 		['at_skin_leopard'] = {
 			label = 'Leopard Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1690,6 +1836,7 @@ return {
 
 		['at_skin_zebra'] = {
 			label = 'Zebra Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1713,6 +1860,7 @@ return {
 
 		['at_skin_geometric'] = {
 			label = 'Geometric Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1736,6 +1884,7 @@ return {
 
 		['at_skin_boom'] = {
 			label = 'Boom Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
@@ -1759,6 +1908,7 @@ return {
 
 		['at_skin_patriotic'] = {
 			label = 'Patriotic Weapon Kit',
+			rarity = 'rare',
 			type = 'skin',
 			weight = 50,
 			client = {
