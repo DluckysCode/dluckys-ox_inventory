@@ -40,6 +40,9 @@ do
 end
 
 if IsDuplicityVersion() then
+    -- loot de dumpsters y carros: data/loot.lua (ya no depende de ox.cfg)
+    local loot = lib and lib.load('data.loot') or {}
+
     server = {
         loghookrejection = GetConvarBool('inventory:loghookrejection', true),
         bulkstashsave = GetConvarBool('inventory:bulkstashsave', true),
@@ -48,25 +51,8 @@ if IsDuplicityVersion() then
         randomloot = GetConvarBool('inventory:randomloot', true),
         evidencegrade = GetConvarInt('inventory:evidencegrade', 2),
         trimplate = GetConvarBool('inventory:trimplate', true),
-        vehicleloot = json.decode(GetConvar('inventory:vehicleloot', [[
-			[
-				["sprunk", 1, 1],
-				["water", 1, 1],
-				["garbage", 1, 2, 50],
-				["panties", 1, 1, 5],
-				["money", 1, 50],
-				["money", 200, 400, 5],
-				["bandage", 1, 1]
-			]
-		]])),
-        dumpsterloot = json.decode(GetConvar('inventory:dumpsterloot', [[
-			[
-				["mustard", 1, 1],
-				["garbage", 1, 3],
-				["money", 1, 10],
-				["burger", 1, 1]
-			]
-		]])),
+        vehicleloot = loot.vehicle,
+        dumpsterloot = loot.dumpster,
         validhosts = json.decode(GetConvar('inventory:validhosts', [[
 			{
                 "r2.fivemanage.com": true,
