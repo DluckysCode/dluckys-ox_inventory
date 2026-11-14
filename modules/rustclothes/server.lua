@@ -9,6 +9,23 @@ for _, s in ipairs(config.slots) do slotById[s.id] = s end
 
 local cooldown = {}
 
+-- Dónde cae la prenda al quitártela: en el slot donde la soltaste (si está vacío)
+-- o en el primer slot libre del inventario principal (no en la barra rápida 1-5 ni en el slot Mochila)
+local HOTBAR, BASE = 5, shared.playerslots
+
+local function freeSlot(inv, wanted)
+    wanted = tonumber(wanted)
+    if wanted and wanted >= 1 and wanted <= inv.slots and wanted ~= BASE and not inv.items[wanted] then return wanted end
+    for slot = HOTBAR + 1, BASE - 1 do
+        if not inv.items[slot] then return slot end
+    end
+end
+
+local function give(target, name, metadata, wanted)
+    local inv = Inventory(target)
+    return Inventory.AddItem(target, name, 1, metadata, inv and freeSlot(inv, wanted)) -- sin slot libre, ox elige
+end
+
 local function busy(source)
     local now = GetGameTimer()
     if cooldown[source] and now - cooldown[source] < 1000 then return true end
@@ -121,7 +138,7 @@ local function makeMetadata(slot, gender, data)
 end
 
 -- Quitarse una prenda: te da el item con esa ropa
-lib.callback.register('ox_inventory:rustClothesTakeOff', function(source, kind, gender, data)
+lib.callback.register('ox_inventory:rustClothesTakeOff', function(source, kind, gender, data, toSlot)
     local slot = slotById[kind]
     if not slot or slot.armour then return false, 'Ranura inválida' end
     if busy(source) then return false, 'Espera un momento' end
@@ -137,7 +154,7 @@ lib.callback.register('ox_inventory:rustClothesTakeOff', function(source, kind, 
     local metadata = makeMetadata(slot, gender, data)
     if not Inventory.CanCarryItem(source, ITEM, 1, metadata) then return false, 'Inventario lleno' end
 
-    Inventory.AddItem(source, ITEM, 1, metadata)
+    give(source, ITEM, metadata, toSlot)
     remember(source, slot, gender, nil)
     return true
 end)
@@ -162,7 +179,7 @@ lib.callback.register('ox_inventory:rustClothesEquip', function(source, invSlot,
     -- lo que llevabas puesto se devuelve solo si coincide con lo verificable
     current = sanitize(slot, current)
     if current and verify(source, slot, gender, current) then
-        Inventory.AddItem(source, ITEM, 1, makeMetadata(slot, gender, current))
+        give(source, ITEM, makeMetadata(slot, gender, current))
     end
 
     local new = sanitize(slot, { comps = metadata.comps, props = metadata.props })
@@ -190,7 +207,7 @@ local function setVest(source, on)
 end
 
 --- Quita el chaleco a "source" y le da el item a "receiver" (él mismo, o quien lo registra)
-local function takeOffArmour(source, receiver)
+local function takeOffArmour(source, receiver, toSlot)
     receiver = receiver or source
     if not Player(source).state.rustVest then return false, 'No lleva chaleco' end
     local ped = GetPlayerPed(source)
@@ -199,7 +216,7 @@ local function takeOffArmour(source, receiver)
     if value > 0 then
         local metadata = { armour = value, description = ('Protección: %d%%'):format(value) }
         if not Inventory.CanCarryItem(receiver, ARMOUR.item, 1, metadata) then return false, 'Inventario lleno' end
-        Inventory.AddItem(receiver, ARMOUR.item, 1, metadata)
+        give(receiver, ARMOUR.item, metadata, toSlot)
     end
     SetPedArmour(ped, 0)
     setVest(source, false)
@@ -228,9 +245,9 @@ lib.callback.register('ox_inventory:rustArmourEquip', function(source, invSlot)
     return equipArmour(source, invSlot)
 end)
 
-lib.callback.register('ox_inventory:rustArmourTakeOff', function(source)
+lib.callback.register('ox_inventory:rustArmourTakeOff', function(source, toSlot)
     if busy(source) then return false, 'Espera un momento' end
-    return takeOffArmour(source)
+    return takeOffArmour(source, source, toSlot)
 end)
 
 -- Usar el item = ponértelo en la ranura (data/items.lua -> server.export)

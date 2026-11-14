@@ -83,12 +83,12 @@ RegisterNUICallback('rustClothesTakeOff', function(data, cb)
     cb(1)
     local slot = slotById[data.kind]
     if not slot then return end
-    if slot.armour then return armourAction('ox_inventory:rustArmourTakeOff') end
+    if slot.armour then return armourAction('ox_inventory:rustArmourTakeOff', data.slot) end
     local g = gender()
     local current = readSlot(g, slot)
     if not current then return notify('No llevas nada ahí') end
 
-    local ok, err = lib.callback.await('ox_inventory:rustClothesTakeOff', false, data.kind, g, current)
+    local ok, err = lib.callback.await('ox_inventory:rustClothesTakeOff', false, data.kind, g, current, data.slot)
     if ok then
         stripSlot(g, slot)
         saveAppearance()
