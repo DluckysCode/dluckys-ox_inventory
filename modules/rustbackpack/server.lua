@@ -79,6 +79,23 @@ local function equip(source, inv, item)
     setLook(source, item.name)
 end
 
+--- Mochila llena = todos sus slots ocupados. El cliente no deja correr mientras esté llena (statebag rustBagFull).
+local function updateFull(source, inv)
+    local e = equipped[source]
+    local full = false
+    if e then
+        full = true
+        for slot = BASE + 1, BASE + types[e.name].slots do
+            if not inv.items[slot] then
+                full = false
+                break
+            end
+        end
+    end
+    local state = Player(source).state
+    if state.rustBagFull ~= full then state:set('rustBagFull', full, true) end
+end
+
 --- Revisa si el slot Mochila cambió y pone/quita la mochila según corresponda
 local function sync(source)
     local inv = Inventory(source)
@@ -90,6 +107,7 @@ local function sync(source)
 
     if e and (not isBackpack(item) or bagId ~= e.bagId) then unequip(source) end
     if isBackpack(item) and not equipped[source] then equip(source, inv, item) end
+    updateFull(source, inv)
 end
 
 ---------------------------------------------------------------------
@@ -184,6 +202,7 @@ function M.takeBackpack(target, receiver)
     -- primero se guarda lo de los slots extra dentro de la mochila
     local metadata = item.metadata
     unequip(target)
+    updateFull(target, inv)
     if not Inventory.RemoveItem(inv, item.name, 1, nil, BP_SLOT) then return false, 'No se pudo quitar' end
     Inventory.AddItem(receiver, item.name, 1, metadata)
     return true

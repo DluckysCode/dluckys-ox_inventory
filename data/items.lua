@@ -86,7 +86,7 @@ return {
 		weight = 1000,
 		stack = false,
 		close = true,
-		description = 'Ponla en el slot Mochila: +10 slots. Úsala para ver lo que tiene dentro.',
+		description = 'Ponla en el slot Mochila: +5 slots. Úsala para ver lo que tiene dentro.',
 		server = { export = 'ox_inventory.rustOpenBackpack' },
 	},
 
@@ -95,7 +95,7 @@ return {
 		weight = 2000,
 		stack = false,
 		close = true,
-		description = 'Ponla en el slot Mochila: +20 slots. Úsala para ver lo que tiene dentro.',
+		description = 'Ponla en el slot Mochila: +10 slots. Úsala para ver lo que tiene dentro.',
 		server = { export = 'ox_inventory.rustOpenBackpack' },
 	},
 

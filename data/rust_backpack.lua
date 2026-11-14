@@ -10,13 +10,13 @@ return {
     types = {
         mochila_pequena = {
             label = 'Mochila pequeña',
-            slots = 10,
+            slots = 5,
             weight = 15000,
             clothing = { male = { 45, 0 }, female = { 45, 0 } },
         },
         mochila_grande = {
             label = 'Mochila grande',
-            slots = 20,
+            slots = 10,
             weight = 30000,
             clothing = { male = { 82, 0 }, female = { 82, 0 } },
         },
