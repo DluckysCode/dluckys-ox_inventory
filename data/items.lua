@@ -1,3 +1,4 @@
+-- rarity = 'uncommon' | 'rare' | 'epic' | 'legendary' (sin rarity = común). Se ve en el color del slot
 return {
 	['testburger'] = {
 		label = 'Test Burger',
@@ -55,6 +56,7 @@ return {
 
 	['bandage'] = {
 		label = 'Bandage',
+		rarity = 'uncommon',
 		weight = 115,
 		client = {
 			anim = { dict = 'missheistdockssetup1clipboard@idle_a', clip = 'idle_a', flag = 49 },
@@ -74,6 +76,7 @@ return {
 
 	['blueprint'] = {
 		label = 'Plano',
+		rarity = 'rare',
 		weight = 10,
 		stack = false,
 		close = true,
@@ -83,6 +86,7 @@ return {
 
 	['mochila_pequena'] = {
 		label = 'Mochila pequeña',
+		rarity = 'rare',
 		weight = 1000,
 		stack = false,
 		close = true,
@@ -92,6 +96,7 @@ return {
 
 	['mochila_grande'] = {
 		label = 'Mochila grande',
+		rarity = 'epic',
 		weight = 2000,
 		stack = false,
 		close = true,
@@ -136,6 +141,7 @@ return {
 
 	['parachute'] = {
 		label = 'Parachute',
+		rarity = 'rare',
 		weight = 8000,
 		stack = false,
 		client = {
@@ -177,11 +183,13 @@ return {
 
 	['lockpick'] = {
 		label = 'Lockpick',
+		rarity = 'uncommon',
 		weight = 160,
 	},
 
 	['phone'] = {
 		label = 'Phone',
+		rarity = 'uncommon',
 		weight = 190,
 		stack = false,
 		consume = 0,
@@ -231,6 +239,7 @@ return {
 
 	['radio'] = {
 		label = 'Radio',
+		rarity = 'uncommon',
 		weight = 1000,
 		stack = false,
 		allowArmed = true
@@ -238,6 +247,7 @@ return {
 
 	['armour'] = {
 		label = 'Chaleco antibalas',
+		rarity = 'epic',
 		weight = 3000,
 		stack = false,
 		description = 'Ponlo en la ranura Chaleco (o úsalo) para protegerte.',
@@ -251,6 +261,7 @@ return {
 
 	['mastercard'] = {
 		label = 'Fleeca Card',
+		rarity = 'uncommon',
 		stack = false,
 		weight = 10,
 		client = {

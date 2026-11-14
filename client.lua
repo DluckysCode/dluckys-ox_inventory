@@ -1236,6 +1236,7 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 			description = v.description,
 			buttons = buttons,
 			ammoName = v.ammoname,
+			rarity = v.rarity,
 			image = v.client?.image
 		}
 	end
