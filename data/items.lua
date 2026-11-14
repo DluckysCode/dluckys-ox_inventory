@@ -99,15 +99,6 @@ return {
 		server = { export = 'ox_inventory.rustOpenBackpack' },
 	},
 
-	['caja_madera'] = {
-		label = 'Caja de madera',
-		weight = 5000,
-		stack = true,
-		close = true,
-		description = 'Úsala para colocarla delante de ti y guardar cosas.',
-		server = { export = 'ox_inventory.rustPlaceBox' },
-	},
-
 	['cloth'] = {
 		label = 'Tela',
 		weight = 20,

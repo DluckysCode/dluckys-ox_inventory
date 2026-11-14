@@ -1,7 +1,6 @@
 if not lib then return end
 
 -- /admininventory: panel de admin + modo para colocar objetos en 3D + blips en el mapa
-local boxTypes = lib.load('data.rust_storage').types
 local benchTemplates = {}
 for _, b in ipairs(lib.load('data.rust_crafting').benches or {}) do benchTemplates[b.id] = b end
 
@@ -141,7 +140,6 @@ local function showMap()
     if not data then return false end
     clearMap()
     for _, b in ipairs(data.benches) do blip(b.x, b.y, b.z, 566, 31, ('[Admin] %s'):format(b.label)) end
-    for _, b in ipairs(data.boxes) do blip(b.x, b.y, b.z, 478, 5, '[Admin] Caja') end
     local mine = mapBlips
     SetTimeout(300000, function() if mapBlips == mine then clearMap() end end)
     return true
@@ -159,9 +157,6 @@ RegisterNUICallback('rustAdminAction', function(d, cb)
     elseif a == 'moveBench' then
         local t = benchTemplates[d.template]
         return cb(t and placeAndSend('moveBench', t.model, { id = d.id }, d.h) or {})
-    elseif a == 'addBox' then
-        local t = boxTypes[d.item]
-        return cb(t and placeAndSend('addBox', t.model, { item = d.item }) or {})
     elseif a == 'goto' then
         hidePanel()
         SetEntityCoords(cache.ped, d.x, d.y, d.z + 0.5, false, false, false, false)
@@ -170,7 +165,7 @@ RegisterNUICallback('rustAdminAction', function(d, cb)
         if d.on then return cb({ ok = showMap() }) end
         clearMap()
         return cb({ ok = true })
-    elseif a == 'openBox' or a == 'viewPlayer' then
+    elseif a == 'viewPlayer' then
         hidePanel() -- se abre el inventario de ox en su lugar
         return cb(server(a, d))
     end

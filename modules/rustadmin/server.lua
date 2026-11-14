@@ -4,7 +4,6 @@ if not lib then return end
 local Inventory = require 'modules.inventory.server'
 local Items = require 'modules.items.server'
 local Bench = require 'modules.rustbench.server'
-local Box = require 'modules.rustbox.server'
 local Craft = require 'modules.rustcraft.server'
 local Log = require 'modules.rustlog.server'
 
@@ -29,15 +28,13 @@ end)
 -- Datos de cada pestaña (se piden solo al abrirla)
 ---------------------------------------------------------------------
 local function onlinePlayers()
-    local list, byOwner = {}, {}
+    local list = {}
     for _, src in ipairs(GetPlayers()) do
         local id = tonumber(src)
-        local inv = Inventory(id)
         list[#list + 1] = { id = id, name = GetPlayerName(id) }
-        if inv and inv.owner then byOwner[inv.owner] = GetPlayerName(id) end
     end
     table.sort(list, function(a, b) return a.id < b.id end)
-    return list, byOwner
+    return list
 end
 
 local itemList -- se arma una sola vez
@@ -60,8 +57,7 @@ local tabs = {
             benches[#benches + 1] = { id = b.id, template = b.template, label = b.label, x = b.x, y = b.y, z = b.z, h = b.h }
         end
 
-        local _, byOwner = onlinePlayers()
-        return { benches = benches, templates = templates, boxTypes = Box.types(), boxes = Box.list(byOwner) }
+        return { benches = benches, templates = templates }
     end,
     players = function()
         return { players = onlinePlayers(), items = allItems(), blueprints = Craft.blueprintRecipes() }
@@ -82,8 +78,7 @@ end)
 --- Para los blips del mapa: todo lo que hay colocado
 lib.callback.register('ox_inventory:rustAdminMap', function(source)
     if not isAdmin(source) then return end
-    local _, byOwner = onlinePlayers()
-    return { benches = Bench.list(), boxes = Box.list(byOwner) }
+    return { benches = Bench.list() }
 end)
 
 ---------------------------------------------------------------------
@@ -96,9 +91,6 @@ local actions = {
     addBench    = function(_, d) return Bench.add(d.template, pos(d)) end,
     moveBench   = function(_, d) return Bench.move(d.id, pos(d)) end,
     removeBench = function(_, d) return Bench.remove(d.id) end,
-    addBox      = function(src, d) return Box.add(src, d.item, pos(d)) end,
-    removeBox   = function(_, d) return Box.remove(d.id) end,
-    openBox     = function(src, d) return Box.open(src, d.id) end,
 
     -- Jugadores
     viewPlayer  = function(src, d)
@@ -137,7 +129,7 @@ lib.callback.register('ox_inventory:rustAdminAction', function(source, action, d
     if d.x ~= nil and not (isNum(d.x) and isNum(d.y) and isNum(d.z) and isNum(d.h or 0)) then return false end
 
     local ok, err = actions[action](source, d)
-    if ok and action ~= 'openBox' and action ~= 'viewPlayer' then
+    if ok and action ~= 'viewPlayer' then
         Log.add('admin', source, describe(action, d))
     end
     return ok == true, err
