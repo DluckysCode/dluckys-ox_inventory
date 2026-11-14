@@ -9,6 +9,7 @@ require 'modules.rustclothes.server'
 require 'modules.rustbox.server'
 require 'modules.rustadmin.server'
 require 'modules.rustbackpack.server'
+require 'modules.rustsearch.server'
 
 if GetConvar('inventory:versioncheck', 'true') == 'true' then
     lib.versionCheck('overextended/ox_inventory')

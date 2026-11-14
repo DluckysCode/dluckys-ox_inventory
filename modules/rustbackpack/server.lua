@@ -98,25 +98,33 @@ end
 CreateThread(function()
     while not shared.ready do Wait(100) end
 
+    -- Las reglas valen para cualquier inventario de jugador (el tuyo o el de alguien que registras)
+    local function playerId(id)
+        id = tonumber(id)
+        local inv = id and Inventory(id)
+        return inv and inv.player and id or nil
+    end
+
     exports.ox_inventory:registerHook('swapItems', function(p)
-        local src = p.source
-        local toPlayer = tonumber(p.toInventory) == src
-        local fromPlayer = tonumber(p.fromInventory) == src
+        local toId, fromId = playerId(p.toInventory), playerId(p.fromInventory)
         local toSlot = slotNum(p.toSlot)
         local moving = p.fromSlot
 
         -- en el slot Mochila solo entran mochilas
-        if toPlayer and toSlot == BP_SLOT and not isBackpack(moving) then return false end
+        if toId and toSlot == BP_SLOT and not isBackpack(moving) then return false end
         -- y al intercambiar, lo que vuelve al slot Mochila también tiene que ser mochila
-        if fromPlayer and moving and moving.slot == BP_SLOT and p.action == 'swap' and not isBackpack(p.toSlot) then
+        if fromId and moving and moving.slot == BP_SLOT and p.action == 'swap' and not isBackpack(p.toSlot) then
             return false
         end
         -- una mochila no puede ir dentro de los slots extra ni dentro de otra mochila
-        if isBackpack(moving) and ((toPlayer and toSlot > BASE) or tostring(p.toInventory):find('^bag_')) then
+        if isBackpack(moving) and ((toId and toSlot > BASE) or tostring(p.toInventory):find('^bag_')) then
             return false
         end
 
-        SetTimeout(150, function() sync(src) end)
+        SetTimeout(150, function()
+            if toId then sync(toId) end
+            if fromId and fromId ~= toId then sync(fromId) end
+        end)
         return true
     end, {})
 end)
@@ -153,3 +161,32 @@ exports('rustOpenBackpack', function(event, item, inventory, slot)
     TriggerClientEvent('ox_inventory:rustBackpackOpen', inventory.id, bagId)
     return false -- no se consume
 end)
+
+---------------------------------------------------------------------
+-- Para registrar a otro jugador (modules/rustsearch)
+---------------------------------------------------------------------
+local M = {}
+
+--- La mochila que lleva puesta: { name, label } o nil
+function M.backpack(target)
+    local inv = Inventory(target)
+    local item = inv and inv.items[BP_SLOT]
+    return isBackpack(item) and { name = item.name, label = types[item.name].label } or nil
+end
+
+--- Le quita la mochila (con todo lo de adentro) a target y se la da a receiver
+function M.takeBackpack(target, receiver)
+    local inv = Inventory(target)
+    local item = inv and inv.items[BP_SLOT]
+    if not isBackpack(item) then return false, 'No lleva mochila' end
+    if not Inventory.CanCarryItem(receiver, item.name, 1, item.metadata) then return false, 'Inventario lleno' end
+
+    -- primero se guarda lo de los slots extra dentro de la mochila
+    local metadata = item.metadata
+    unequip(target)
+    if not Inventory.RemoveItem(inv, item.name, 1, nil, BP_SLOT) then return false, 'No se pudo quitar' end
+    Inventory.AddItem(receiver, item.name, 1, metadata)
+    return true
+end
+
+return M

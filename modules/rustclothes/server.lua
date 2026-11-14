@@ -189,15 +189,17 @@ local function setVest(source, on)
     TriggerClientEvent('ox_inventory:rustArmourLook', source, on)
 end
 
-local function takeOffArmour(source)
-    if not Player(source).state.rustVest then return false, 'No llevas chaleco' end
+--- Quita el chaleco a "source" y le da el item a "receiver" (él mismo, o quien lo registra)
+local function takeOffArmour(source, receiver)
+    receiver = receiver or source
+    if not Player(source).state.rustVest then return false, 'No lleva chaleco' end
     local ped = GetPlayerPed(source)
     local value = GetPedArmour(ped)
 
     if value > 0 then
         local metadata = { armour = value, description = ('Protección: %d%%'):format(value) }
-        if not Inventory.CanCarryItem(source, ARMOUR.item, 1, metadata) then return false, 'Inventario lleno' end
-        Inventory.AddItem(source, ARMOUR.item, 1, metadata)
+        if not Inventory.CanCarryItem(receiver, ARMOUR.item, 1, metadata) then return false, 'Inventario lleno' end
+        Inventory.AddItem(receiver, ARMOUR.item, 1, metadata)
     end
     SetPedArmour(ped, 0)
     setVest(source, false)
@@ -271,3 +273,18 @@ RegisterNetEvent('illenium-appearance:server:saveAppearance', function()
         known[src] = nil
     end)
 end)
+
+---------------------------------------------------------------------
+-- Para registrar a otro jugador (modules/rustsearch)
+---------------------------------------------------------------------
+local M = {}
+
+--- Protección del chaleco que lleva puesto (nil si no lleva)
+function M.vest(target)
+    return Player(target).state.rustVest and GetPedArmour(GetPlayerPed(target)) or nil
+end
+
+--- Le quita el chaleco a target y se lo da a receiver
+function M.takeVest(target, receiver) return takeOffArmour(target, receiver) end
+
+return M
