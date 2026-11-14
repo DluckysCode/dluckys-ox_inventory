@@ -262,4 +262,13 @@ return {
 		label = 'Scrap Metal',
 		weight = 80,
 	},
+
+	-- dl_sastreria (la tela es 'cloth' y las prendas son 'prenda', ambos de arriba)
+	['hilo'] = { label = 'Hilo', weight = 20, description = 'Carrete de hilo' },
+	['cuero'] = { label = 'Cuero', weight = 150, description = 'Pieza de cuero curtido' },
+	['plastico'] = { label = 'Plástico', weight = 50 },
+	['seda'] = { label = 'Seda', weight = 30, description = 'Tela fina y rara para prendas especiales' },
+	['algodon'] = { label = 'Algodón', weight = 40, description = 'Algodón recién recogido' },
+	['cuero_crudo'] = { label = 'Piel cruda', weight = 400, description = 'Hay que curtirla para obtener cuero' },
+	['botella_plastico'] = { label = 'Botella de plástico', weight = 30, description = 'Se puede reciclar' },
 }

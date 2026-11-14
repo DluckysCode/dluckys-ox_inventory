@@ -18,6 +18,7 @@ return {
         { id = 'tools',     label = 'Herramientas' },
         { id = 'weapons',   label = 'Armas' },
         { id = 'items',     label = 'Objetos' },
+        { id = 'textil',    label = 'Textil' },
     },
 
     maxQueue = 10, -- máximo de crafteos en cola por jugador
@@ -55,6 +56,12 @@ return {
         { name = 'bandage',  time = 3,  category = 'medical', ingredients = { cloth = 5 } },
         { name = 'lockpick', time = 8,  category = 'tools',   ingredients = { scrapmetal = 5 } },
         { name = 'armour',   time = 20, category = 'items',   ingredients = { cloth = 20, scrapmetal = 15 }, level = 1, blueprint = true },
+
+        -- Textil (dl_sastreria): materiales para la mesa de costura
+        { name = 'hilo',     count = 2, time = 3, category = 'textil', ingredients = { algodon = 2 } },
+        { name = 'cloth',    count = 1, time = 4, category = 'textil', ingredients = { algodon = 2, hilo = 1 }, level = 1 },
+        { name = 'cuero',    count = 1, time = 6, category = 'textil', ingredients = { cuero_crudo = 1 }, level = 1 },
+        { name = 'plastico', count = 1, time = 3, category = 'textil', ingredients = { botella_plastico = 3 }, level = 1 },
     },
 
     -- REPARAR (en mesas con repair = true). Costo de una reparación completa (0% -> 100%).
@@ -71,6 +78,7 @@ return {
         garbage  = { scrapmetal = 1, cloth = 2 },
         lockpick = { scrapmetal = 2 },
         bandage  = { cloth = 2 },
+        prenda   = { cloth = 1, hilo = 1 }, -- cualquier prenda de ropa (dl_sastreria)
     },
 
     blueprintItem = 'blueprint', -- item de data/items.lua que enseña una receta
