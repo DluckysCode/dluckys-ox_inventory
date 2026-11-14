@@ -36,7 +36,7 @@ return {
         { id = 'jacket',    label = 'Torso',     comp = 11, extra = { 3 }, side = 'left', image = 'prenda_camisa' },
         { id = 'shirt',     label = 'Interior',  comp = 8,  side = 'right', image = 'prenda_camisa' },
         { id = 'vest',      label = 'Chaleco',   comp = 9,  side = 'left',  armour = true, image = 'armour' },
-        { id = 'accessory', label = 'Accesorio', comp = 7,  side = 'right' },
+        { id = 'accessory', label = 'Accesorio', comp = 7,  side = 'right', image = 'prenda' },
         { id = 'legs',      label = 'Pantalón',  comp = 4,  side = 'left',  image = 'prenda_pantalon' },
         { id = 'shoes',     label = 'Zapatos',   comp = 6,  side = 'left',  image = 'prenda_zapatos' },
         { id = 'glasses',   label = 'Lentes',    prop = 1,  side = 'right', image = 'prenda_lentes' },
