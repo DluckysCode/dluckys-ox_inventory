@@ -33,7 +33,7 @@ return {
     slots = {
         { id = 'hat',       label = 'Cabeza',    prop = 0,  side = 'left',  image = 'prenda_sombrero' },
         { id = 'mask',      label = 'Máscara',   comp = 1,  side = 'right', image = 'prenda_mascara' },
-        { id = 'jacket',    label = 'Torso',     comp = 11, extra = { 3 }, side = 'left', image = 'prenda_camisa' },
+        { id = 'jacket',    label = 'Torso',     comp = 11, extra = { 3 }, side = 'left', image = 'prenda_chaqueta' },
         { id = 'shirt',     label = 'Interior',  comp = 8,  side = 'right', image = 'prenda_camisa' },
         { id = 'vest',      label = 'Chaleco',   comp = 9,  side = 'left',  armour = true, image = 'armour' },
         { id = 'accessory', label = 'Accesorio', comp = 7,  side = 'right', image = 'prenda' },
