@@ -33,7 +33,7 @@ local function sendClothing()
     local g = gender()
     local slots = {}
     for i, s in ipairs(config.slots) do
-        slots[i] = { id = s.id, label = s.label, side = s.side, worn = isWorn(g, s) }
+        slots[i] = { id = s.id, label = s.label, side = s.side, image = s.image, worn = isWorn(g, s) }
     end
     SendNUIMessage({ action = 'rustClothing', data = { slots = slots } })
 end
