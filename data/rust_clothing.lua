@@ -8,6 +8,14 @@
 return {
     item = 'prenda', -- item de data/items.lua que representa una prenda
 
+    -- Ranura con armour = true (Chaleco): solo acepta el chaleco antibalas.
+    -- Puesto da la protección que le quede al item; quitado vuelve a ser item con esa protección.
+    -- look = cómo se ve (componente 9 de GTA) { drawable, textura }. Si no se ve bien, cambia el número.
+    armour = {
+        item = 'armour',
+        look = { male = { 1, 0 }, female = { 1, 0 } },
+    },
+
     -- Cámara que muestra al personaje a la izquierda mientras el inventario está abierto
     -- offset = posición de la cámara respecto al PJ (x = lado, y = delante, z = altura)
     -- target = punto al que mira
@@ -27,7 +35,7 @@ return {
         { id = 'mask',      label = 'Máscara',   comp = 1,  side = 'right', image = 'prenda_mascara' },
         { id = 'jacket',    label = 'Torso',     comp = 11, extra = { 3 }, side = 'left', image = 'prenda_camisa' },
         { id = 'shirt',     label = 'Interior',  comp = 8,  side = 'right', image = 'prenda_camisa' },
-        { id = 'vest',      label = 'Chaleco',   comp = 9,  side = 'left' },
+        { id = 'vest',      label = 'Chaleco',   comp = 9,  side = 'left',  armour = true, image = 'armour' },
         { id = 'accessory', label = 'Accesorio', comp = 7,  side = 'right' },
         { id = 'legs',      label = 'Pantalón',  comp = 4,  side = 'left',  image = 'prenda_pantalon' },
         { id = 'shoes',     label = 'Zapatos',   comp = 6,  side = 'left',  image = 'prenda_zapatos' },

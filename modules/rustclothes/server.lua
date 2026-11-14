@@ -123,7 +123,7 @@ end
 -- Quitarse una prenda: te da el item con esa ropa
 lib.callback.register('ox_inventory:rustClothesTakeOff', function(source, kind, gender, data)
     local slot = slotById[kind]
-    if not slot then return false, 'Ranura inválida' end
+    if not slot or slot.armour then return false, 'Ranura inválida' end
     if busy(source) then return false, 'Espera un momento' end
     if gender ~= 'male' and gender ~= 'female' then return false, 'Solo funciona con personajes freemode' end
 
@@ -145,7 +145,7 @@ end)
 -- Ponerse una prenda: el item sale del inventario y se devuelve lo que tenías puesto
 lib.callback.register('ox_inventory:rustClothesEquip', function(source, invSlot, kind, gender, current)
     local slot = slotById[kind]
-    if not slot then return false, 'Ranura inválida' end
+    if not slot or slot.armour then return false, 'Ranura inválida' end
     if busy(source) then return false, 'Espera un momento' end
 
     local item = Inventory.GetSlot(source, tonumber(invSlot))
@@ -169,6 +169,91 @@ lib.callback.register('ox_inventory:rustClothesEquip', function(source, invSlot,
     if new then remember(source, slot, gender, new) end
 
     return true, { comps = metadata.comps, props = metadata.props }
+end)
+
+---------------------------------------------------------------------
+-- Chaleco antibalas (ranura con armour = true)
+-- La protección la pone y la lee el servidor. El item guarda la que le queda (metadata.armour).
+---------------------------------------------------------------------
+local ARMOUR = config.armour or { item = 'armour' }
+
+local function vestKey(owner) return ('rustclothes:vest:%s'):format(owner) end
+
+--- Marca si lleva el chaleco (statebag para el cliente + KVP para cuando reconecte) y cambia cómo se ve
+local function setVest(source, on)
+    Player(source).state:set('rustVest', on, true)
+    local inv = Inventory(source)
+    if inv and inv.owner then
+        if on then SetResourceKvpInt(vestKey(inv.owner), 1) else DeleteResourceKvp(vestKey(inv.owner)) end
+    end
+    TriggerClientEvent('ox_inventory:rustArmourLook', source, on)
+end
+
+local function takeOffArmour(source)
+    if not Player(source).state.rustVest then return false, 'No llevas chaleco' end
+    local ped = GetPlayerPed(source)
+    local value = GetPedArmour(ped)
+
+    if value > 0 then
+        local metadata = { armour = value, description = ('Protección: %d%%'):format(value) }
+        if not Inventory.CanCarryItem(source, ARMOUR.item, 1, metadata) then return false, 'Inventario lleno' end
+        Inventory.AddItem(source, ARMOUR.item, 1, metadata)
+    end
+    SetPedArmour(ped, 0)
+    setVest(source, false)
+    return true
+end
+
+local function equipArmour(source, invSlot)
+    local item = Inventory.GetSlot(source, tonumber(invSlot))
+    if not item or item.name ~= ARMOUR.item then return false, 'En el chaleco solo va un chaleco antibalas' end
+    local value = math.max(1, math.min(100, tonumber(item.metadata and item.metadata.armour) or 100))
+
+    -- si ya llevaba uno, se le devuelve primero
+    if Player(source).state.rustVest then
+        local ok, err = takeOffArmour(source)
+        if not ok then return false, err end
+    end
+    if not Inventory.RemoveItem(source, ARMOUR.item, 1, nil, item.slot) then return false, 'No se pudo usar el chaleco' end
+
+    SetPedArmour(GetPlayerPed(source), value)
+    setVest(source, true)
+    return true
+end
+
+lib.callback.register('ox_inventory:rustArmourEquip', function(source, invSlot)
+    if busy(source) then return false, 'Espera un momento' end
+    return equipArmour(source, invSlot)
+end)
+
+lib.callback.register('ox_inventory:rustArmourTakeOff', function(source)
+    if busy(source) then return false, 'Espera un momento' end
+    return takeOffArmour(source)
+end)
+
+-- Usar el item = ponértelo en la ranura (data/items.lua -> server.export)
+exports('rustUseArmour', function(event, _, inventory, slot)
+    if event ~= 'usingItem' then return end
+    local ok, err = equipArmour(inventory.id, slot)
+    if not ok then TriggerClientEvent('ox_lib:notify', inventory.id, { type = 'error', description = err }) end
+    return false -- el item ya se quitó (o no se usa); ox no tiene que consumir nada
+end)
+
+-- El cliente avisa cuando la protección llega a 0: el chaleco se rompió
+RegisterNetEvent('ox_inventory:rustArmourBroken', function()
+    local src = source
+    if Player(src).state.rustVest and GetPedArmour(GetPlayerPed(src)) <= 0 then setVest(src, false) end
+end)
+
+-- Al entrar con el personaje: sigue puesto solo si lo llevaba y todavía tiene protección
+RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
+    local src = source
+    SetTimeout(4000, function()
+        local inv = Inventory(src)
+        if not inv or not inv.owner then return end
+        local had = GetResourceKvpInt(vestKey(inv.owner)) == 1
+        setVest(src, had and GetPedArmour(GetPlayerPed(src)) > 0)
+    end)
 end)
 
 AddEventHandler('playerDropped', function()

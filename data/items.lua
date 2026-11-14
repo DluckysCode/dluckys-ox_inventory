@@ -246,13 +246,11 @@ return {
 	},
 
 	['armour'] = {
-		label = 'Bulletproof Vest',
+		label = 'Chaleco antibalas',
 		weight = 3000,
 		stack = false,
-		client = {
-			anim = { dict = 'clothingshirt', clip = 'try_shirt_positive_d' },
-			usetime = 3500
-		}
+		description = 'Ponlo en la ranura Chaleco (o úsalo) para protegerte.',
+		server = { export = 'ox_inventory.rustUseArmour' },
 	},
 
 	['clothing'] = {

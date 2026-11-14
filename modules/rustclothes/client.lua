@@ -24,6 +24,7 @@ local function gender()
 end
 
 local function isWorn(g, slot)
+    if slot.armour then return LocalPlayer.state.rustVest == true end
     if not g then return false end
     if slot.prop then return GetPedPropIndex(cache.ped, slot.prop) ~= -1 end
     return GetPedDrawableVariation(cache.ped, slot.comp) ~= (config.naked[g][slot.comp] or 0)
@@ -33,7 +34,10 @@ local function sendClothing()
     local g = gender()
     local slots = {}
     for i, s in ipairs(config.slots) do
-        slots[i] = { id = s.id, label = s.label, side = s.side, image = s.image, worn = isWorn(g, s) }
+        slots[i] = {
+            id = s.id, label = s.label, side = s.side, image = s.image, worn = isWorn(g, s),
+            accepts = s.armour and config.armour.item or config.item, -- qué item se puede soltar en la ranura
+        }
     end
     SendNUIMessage({ action = 'rustClothing', data = { slots = slots } })
 end
@@ -69,10 +73,17 @@ local function readSlot(g, slot)
     return { comps = comps }
 end
 
+--- Chaleco antibalas: lo maneja el servidor (protección incluida)
+local function armourAction(event, ...)
+    local ok, err = lib.callback.await(event, false, ...)
+    if ok then PlaySoundFrontend(-1, 'NAV_LEFT_RIGHT', 'HUD_FRONTEND_DEFAULT_SOUNDSET', true) else notify(err) end
+end
+
 RegisterNUICallback('rustClothesTakeOff', function(data, cb)
     cb(1)
     local slot = slotById[data.kind]
     if not slot then return end
+    if slot.armour then return armourAction('ox_inventory:rustArmourTakeOff') end
     local g = gender()
     local current = readSlot(g, slot)
     if not current then return notify('No llevas nada ahí') end
@@ -91,6 +102,7 @@ RegisterNUICallback('rustClothesEquip', function(data, cb)
     cb(1)
     local slot = slotById[data.kind]
     if not slot then return end
+    if slot.armour then return armourAction('ox_inventory:rustArmourEquip', data.slot) end
     local g = gender()
     local ok, res = lib.callback.await('ox_inventory:rustClothesEquip', false, data.slot, data.kind, g, readSlot(g, slot))
     if ok and res then
@@ -100,6 +112,27 @@ RegisterNUICallback('rustClothesEquip', function(data, cb)
         notify(res or 'No se pudo poner la prenda')
     end
     sendClothing()
+end)
+
+-- El servidor pone o quita el chaleco: cómo se ve y vigilar si se rompe (protección en 0)
+RegisterNetEvent('ox_inventory:rustArmourLook', function(on)
+    local g = gender()
+    if g then
+        local look = on and config.armour.look[g]
+        SetPedComponentVariation(cache.ped, 9, look and look[1] or config.naked[g][9] or 0, look and look[2] or 0, 0)
+    end
+    sendClothing()
+
+    if not on then return end
+    CreateThread(function()
+        while LocalPlayer.state.rustVest do
+            Wait(1000)
+            if GetPedArmour(cache.ped) <= 0 then
+                TriggerServerEvent('ox_inventory:rustArmourBroken')
+                break
+            end
+        end
+    end)
 end)
 
 ---------------------------------------------------------------------
