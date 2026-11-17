@@ -426,7 +426,7 @@ function Inventory.SetSlot(inv, item, count, metadata, slot)
 	local newWeight = currentSlot and inv.weight - currentSlot.weight or inv.weight
 
 	if currentSlot and newCount < 1 then
-		TriggerClientEvent('ox_inventory:itemNotify', inv.id, { currentSlot, 'ui_removed', currentSlot.count })
+		if not inv.quietNotify then TriggerClientEvent('ox_inventory:itemNotify', inv.id, { currentSlot, 'ui_removed', currentSlot.count }) end
 		currentSlot = nil
 	else
 		currentSlot = {name = item.name, label = item.label, weight = item.weight, slot = slot, count = newCount, description = item.description, metadata = metadata, stack = item.stack, close = item.close}
@@ -434,7 +434,7 @@ function Inventory.SetSlot(inv, item, count, metadata, slot)
 		currentSlot.weight = slotWeight
 		newWeight += slotWeight
 
-		TriggerClientEvent('ox_inventory:itemNotify', inv.id, { currentSlot, count < 0 and 'ui_removed' or 'ui_added', math.abs(count) })
+		if not inv.quietNotify then TriggerClientEvent('ox_inventory:itemNotify', inv.id, { currentSlot, count < 0 and 'ui_removed' or 'ui_added', math.abs(count) }) end
 	end
 
 	inv.weight = newWeight
@@ -1409,7 +1409,7 @@ function Inventory.RemoveItem(inv, item, count, metadata, slot, ignoreTotal, str
 		for k, v in pairs(itemSlots) do
 			if removed < total then
 				if v == count then
-					TriggerClientEvent('ox_inventory:itemNotify', inv.id, { inv.items[k], 'ui_removed', v })
+					if not inv.quietNotify then TriggerClientEvent('ox_inventory:itemNotify', inv.id, { inv.items[k], 'ui_removed', v }) end
 
 					removed = total
 					inv.weight -= inv.items[k].weight
@@ -1426,7 +1426,7 @@ function Inventory.RemoveItem(inv, item, count, metadata, slot, ignoreTotal, str
 					removed = total
 					count = v - count
 				else
-					TriggerClientEvent('ox_inventory:itemNotify', inv.id, { inv.items[k], 'ui_removed', v })
+					if not inv.quietNotify then TriggerClientEvent('ox_inventory:itemNotify', inv.id, { inv.items[k], 'ui_removed', v }) end
 
 					removed = removed + v
 					count = count - v

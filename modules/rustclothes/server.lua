@@ -10,8 +10,8 @@ for _, s in ipairs(config.slots) do slotById[s.id] = s end
 local cooldown = {}
 
 -- Dónde cae la prenda al quitártela: en el slot donde la soltaste (si está vacío)
--- o en el primer slot libre del inventario principal (no en la barra rápida 1-5 ni en el slot Mochila)
-local HOTBAR, BASE = 5, shared.playerslots
+-- o en el primer slot libre del inventario principal (no en la barra rápida 1-6 ni en el slot Mochila)
+local HOTBAR, BASE = 6, shared.playerslots
 
 local function freeSlot(inv, wanted)
     wanted = tonumber(wanted)

@@ -1,4 +1,4 @@
--- Mochilas (estilo Rust): se ponen en el slot "Mochila" de la barra rápida.
+-- Mochilas (estilo Rust): se ponen en la ranura "Mochila" (junto a la ropa).
 -- Con la mochila puesta el inventario gana slots y peso; al quitarla, lo de esos slots se guarda dentro de ella.
 --
 -- slots    = slots extra que da
@@ -16,7 +16,7 @@ return {
         },
         mochila_grande = {
             label = 'Mochila grande',
-            slots = 10,
+            slots = 12,
             weight = 30000,
             clothing = { male = { 82, 0 }, female = { 82, 0 } },
         },

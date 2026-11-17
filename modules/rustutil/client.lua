@@ -34,6 +34,9 @@ function M.setText(point, show, text, icon)
     if show then lib.showTextUI(text, { icon = icon }) else lib.hideTextUI() end
 end
 
+--- true mientras está abierta una mesa (reparación o crafteo) (sin cámara ni ropa)
+M.benchOpen = false
+
 --- true si lo abierto es solo tu inventario (o el suelo): ahí salen la cámara y la ropa
 function M.isPersonal()
     local t = M.rightType

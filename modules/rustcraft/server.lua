@@ -15,6 +15,7 @@ local recipes, recipeByName = {}, {}
 
 local function addRecipe(r)
     r.id, r.count = #recipes + 1, r.count or 1
+    if r.unlock then r.blueprint = true end -- lo del árbol se aprende antes de craftearlo
     recipes[r.id] = r
     recipeByName[r.name] = r
 end
@@ -145,10 +146,12 @@ local function buildUiData()
     local recycle = {}
     for name, out in pairs(config.recycle or {}) do recycle[name] = toList(out) end
 
+    local skins = config.skins or {}
     uiData = {
         recipes = list,
         repair = { default = toList(config.repair and config.repair.default), items = repairItems },
         recycle = recycle,
+        skins = { cost = toList(skins.cost), tints = skins.tints or {} },
     }
 end
 
@@ -276,6 +279,7 @@ lib.callback.register('ox_inventory:rustcraftRecipes', function(source)
         bench = benchState(source),
         repair = uiData.repair,
         recycle = uiData.recycle,
+        skins = uiData.skins,
     }
 end)
 
@@ -332,12 +336,82 @@ lib.callback.register('ox_inventory:rustcraftCancel', function(source, jobId)
 end)
 
 ---------------------------------------------------------------------
--- Reparar (en mesa con repair = true)
+-- Mesa de reparación: el objeto se pasa a una ranura de la mesa (stash propio de cada personaje,
+-- 1 slot). Ahí se repara o se le cambia el color y luego se saca al inventario.
+-- Como es un stash, si cierras o te desconectas el objeto sigue en la mesa.
 ---------------------------------------------------------------------
-lib.callback.register('ox_inventory:rustcraftRepair', function(source, slotId)
-    if not benchState(source).repair then return false, 'Necesitas estar en una mesa para reparar' end
+local function benchInv(source)
+    local owner = ownerOf(source)
+    if not owner then return end
+    local id = ('rrepair_%s'):format(owner)
+    exports.ox_inventory:RegisterStash(id, 'Mesa de reparación', 1, 100000000)
+    return Inventory(id)
+end
+
+--- Lo que hay en la mesa, para la interfaz (o false si está vacía)
+local function benchItem(inv)
+    local item = inv and Inventory.GetSlot(inv, 1)
+    if not item then return false end
+    return { name = item.name, label = itemLabel(item.name), count = item.count, metadata = item.metadata }
+end
+
+local function nearRepair(source) return benchState(source).repair end
+
+lib.callback.register('ox_inventory:rustRepairGet', function(source)
+    return benchItem(benchInv(source))
+end)
+
+lib.callback.register('ox_inventory:rustRepairPut', function(source, slotId)
+    if not nearRepair(source) then return false, 'Necesitas estar en una mesa de reparación' end
+    local inv = benchInv(source)
+    if not inv then return false, 'No se pudo abrir la mesa' end
+    if Inventory.GetSlot(inv, 1) then return false, 'Ya hay un objeto en la mesa' end
 
     local item = Inventory.GetSlot(source, tonumber(slotId))
+    if not item then return false, 'Ese objeto ya no está' end
+
+    if not Inventory.RemoveItem(source, item.name, item.count, item.metadata, item.slot) then
+        return false, 'No se pudo mover'
+    end
+    if not Inventory.AddItem(inv, item.name, item.count, item.metadata, 1) then
+        Inventory.AddItem(source, item.name, item.count, item.metadata) -- se devuelve si algo falla
+        return false, 'No se pudo mover'
+    end
+    return benchItem(inv)
+end)
+
+lib.callback.register('ox_inventory:rustRepairTake', function(source)
+    local inv = benchInv(source)
+    local item = inv and Inventory.GetSlot(inv, 1)
+    if not item then return false, 'La mesa está vacía' end
+    if not Inventory.CanCarryItem(source, item.name, item.count, item.metadata) then
+        return false, 'Inventario lleno'
+    end
+
+    if not Inventory.RemoveItem(inv, item.name, item.count, item.metadata, 1) then return false, 'No se pudo sacar' end
+    Inventory.AddItem(source, item.name, item.count, item.metadata)
+    return true
+end)
+
+--- Paga "cost" ({item = n}) con lo que lleva el jugador. Devuelve false + motivo si no le alcanza
+local function pay(source, cost)
+    for name, amount in pairs(cost) do
+        if (Inventory.GetItemCount(source, name) or 0) < amount then
+            return false, ('Te falta %s'):format(itemLabel(name))
+        end
+    end
+    for name, amount in pairs(cost) do Inventory.RemoveItem(source, name, amount) end
+    return true
+end
+
+---------------------------------------------------------------------
+-- Reparar el objeto que está en la mesa
+---------------------------------------------------------------------
+lib.callback.register('ox_inventory:rustcraftRepair', function(source)
+    if not nearRepair(source) then return false, 'Necesitas estar en una mesa de reparación' end
+
+    local inv = benchInv(source)
+    local item = inv and Inventory.GetSlot(inv, 1)
     local durability = item and item.metadata and item.metadata.durability
     if type(durability) ~= 'number' or durability > 100 then return false, 'Ese item no se puede reparar' end
     if durability >= 100 then return false, 'Ya está al 100%' end
@@ -347,18 +421,42 @@ lib.callback.register('ox_inventory:rustcraftRepair', function(source, slotId)
 
     local missing = (100 - durability) / 100
     local cost = {}
-    for name, amount in pairs(base) do
-        cost[name] = math.max(1, math.ceil(amount * missing))
-        if (Inventory.GetItemCount(source, name) or 0) < cost[name] then
-            return false, ('Te falta %s'):format(itemLabel(name))
-        end
-    end
+    for name, amount in pairs(base) do cost[name] = math.max(1, math.ceil(amount * missing)) end
 
-    for name, amount in pairs(cost) do Inventory.RemoveItem(source, name, amount) end
-    Inventory.SetDurability(source, item.slot, 100)
+    local ok, err = pay(source, cost)
+    if not ok then return false, err end
+    Inventory.SetDurability(inv, 1, 100)
     TriggerClientEvent('ox_inventory:rustcraftDone', source)
     Log.add('repair', source, ('%s (%d%% -> 100%%)'):format(itemLabel(item.name), math.floor(durability)))
-    return true
+    return benchItem(inv)
+end)
+
+---------------------------------------------------------------------
+-- Skins (color/tint de GTA) del arma que está en la mesa
+---------------------------------------------------------------------
+local validTint = {}
+for _, t in ipairs(config.skins and config.skins.tints or {}) do validTint[t.id] = true end
+
+lib.callback.register('ox_inventory:rustcraftSkin', function(source, tint)
+    if not nearRepair(source) then return false, 'Necesitas estar en una mesa de reparación' end
+
+    tint = tonumber(tint)
+    if not tint or not validTint[tint] then return false, 'Color inválido' end
+
+    local inv = benchInv(source)
+    local item = inv and Inventory.GetSlot(inv, 1)
+    local def = item and Items(item.name)
+    if not def or not def.weapon then return false, 'Solo las armas pueden cambiar de skin' end
+    if (item.metadata and item.metadata.tint or 0) == tint then return false, 'Ya tiene ese color' end
+
+    local ok, err = pay(source, config.skins.cost or {})
+    if not ok then return false, err end
+    local metadata = item.metadata or {}
+    metadata.tint = tint
+    Inventory.SetMetadata(inv, 1, metadata)
+    TriggerClientEvent('ox_inventory:rustcraftDone', source)
+    Log.add('skin', source, ('%s -> color %d'):format(itemLabel(item.name), tint))
+    return benchItem(inv)
 end)
 
 ---------------------------------------------------------------------
@@ -380,6 +478,66 @@ lib.callback.register('ox_inventory:rustcraftRecycle', function(source, itemName
     for name, per in pairs(output) do Inventory.AddItem(source, name, per * amount) end
     TriggerClientEvent('ox_inventory:rustcraftDone', source)
     Log.add('recycle', source, ('%dx %s'):format(amount, itemLabel(itemName)))
+    return true
+end)
+
+---------------------------------------------------------------------
+-- Árbol de desbloqueos (recetas con "unlock"): se pagan con chatarra en una mesa del nivel de la receta
+---------------------------------------------------------------------
+local UNLOCK_ITEM = config.unlockItem or 'scrapmetal'
+
+--- Nodos del árbol de una mesa de nivel "level" para este jugador
+lib.callback.register('ox_inventory:rustTreeGet', function(source)
+    local level = benchState(source).level
+    if level < 1 then return false, 'Necesitas estar en una mesa de trabajo' end
+
+    local learned = getLearned(ownerOf(source))
+    local nodes = {}
+    for _, r in ipairs(recipes) do
+        if r.unlock and not r.disabled and r.level == level then
+            local after = r.unlock.after
+            nodes[#nodes + 1] = {
+                name = r.name,
+                label = itemLabel(r.name),
+                cost = r.unlock.cost or 0,
+                after = after,
+                afterLabel = after and itemLabel(after),
+                afterLevel = after and recipeByName[after] and recipeByName[after].level,
+                afterLearned = not after or learned[after] == true,
+                learned = learned[r.name] == true,
+            }
+        end
+    end
+    return {
+        level = level,
+        currency = itemLabel(UNLOCK_ITEM),
+        have = Inventory.GetItemCount(source, UNLOCK_ITEM) or 0,
+        nodes = nodes,
+    }
+end)
+
+lib.callback.register('ox_inventory:rustTreeUnlock', function(source, name)
+    local r = recipeByName[name]
+    if not r or not r.unlock or r.disabled then return false, 'Eso no se desbloquea' end
+    if benchState(source).level < (r.level or 0) then
+        return false, ('Necesitas una mesa de nivel %d'):format(r.level or 0)
+    end
+
+    local owner = ownerOf(source)
+    local learned = getLearned(owner)
+    if learned[name] then return false, 'Ya lo tienes desbloqueado' end
+    local after = r.unlock.after
+    if after and not learned[after] then return false, ('Primero desbloquea %s'):format(itemLabel(after)) end
+
+    local cost = r.unlock.cost or 0
+    if (Inventory.GetItemCount(source, UNLOCK_ITEM) or 0) < cost then
+        return false, ('Te falta %s'):format(itemLabel(UNLOCK_ITEM))
+    end
+    if cost > 0 and not Inventory.RemoveItem(source, UNLOCK_ITEM, cost) then return false, 'No se pudo pagar' end
+
+    learn(owner, name)
+    TriggerClientEvent('ox_inventory:rustcraftDone', source)
+    Log.add('blueprint', source, ('Desbloqueó %s (%d %s)'):format(itemLabel(name), cost, itemLabel(UNLOCK_ITEM)))
     return true
 end)
 

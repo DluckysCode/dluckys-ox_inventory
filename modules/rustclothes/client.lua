@@ -140,6 +140,27 @@ end)
 ---------------------------------------------------------------------
 local cam = config.camera or {}
 local camHandle
+-- Dónde está el hueco entre las prendas, en fracción del ancho de pantalla (0 = izquierda, 1 = derecha).
+-- La interfaz lo mide y lo manda (rustCamTarget); hasta entonces se usa un valor aproximado.
+local pedFrac = 0.2
+
+local o, t = cam.offset or vec3(-2.05, 4.3, -0.5), cam.target or vec3(-2.05, 0.0, -0.58)
+local fov = cam.fov or 45.0
+
+--- Coloca la cámara para que el personaje quede en "pedFrac" de la pantalla
+local function aimCam()
+    if not camHandle then return end
+    local side = o.x
+    if cam.auto ~= false then
+        local w, h = GetActiveScreenResolution()
+        local aspect = w / h
+        local pedX = pedFrac * aspect -- en altos de pantalla
+        local metersPerScreen = 2 * o.y * math.tan(math.rad(fov / 2))
+        side = -(aspect / 2 - pedX) * metersPerScreen
+    end
+    AttachCamToEntity(camHandle, cache.ped, side, o.y, o.z, true)
+    PointCamAtEntity(camHandle, cache.ped, side + (t.x - o.x), t.y, t.z, true)
+end
 
 local function startCam()
     if cam.enabled == false or camHandle then return end
@@ -147,29 +168,24 @@ local function startCam()
     if IsPedInAnyVehicle(ped, false) or IsEntityDead(ped) then return end
 
     camHandle = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
-    local o, t = cam.offset or vec3(-2.05, 4.3, -0.5), cam.target or vec3(-2.05, 0.0, -0.58)
-    local fov = cam.fov or 45.0
-    local side = o.x
-
-    if cam.auto ~= false then
-        -- Calcula dónde cae el hueco entre las ranuras de ropa según la pantalla.
-        -- La interfaz mide en "alto de pantalla": margen 3% del ancho + ranuras + mitad del hueco.
-        local w, h = GetActiveScreenResolution()
-        local aspect = w / h
-        local pedX = 0.03 * aspect + 0.26            -- centro del hueco, en altos de pantalla
-        local metersPerScreen = 2 * o.y * math.tan(math.rad(fov / 2))
-        side = -(aspect / 2 - pedX) * metersPerScreen
-    end
-
-    AttachCamToEntity(camHandle, ped, side, o.y, o.z, true)
-    PointCamAtEntity(camHandle, ped, side + (t.x - o.x), t.y, t.z, true)
+    aimCam()
     SetCamFov(camHandle, fov)
-    RenderScriptCams(true, true, 400, true, false)
+    RenderScriptCams(true, false, 0, true, false) -- sin deslizamiento: la cámara aparece de golpe
 end
+
+-- La interfaz mide el hueco entre las prendas y lo manda; se guarda para las próximas veces
+RegisterNUICallback('rustCamTarget', function(d, cb)
+    local x = tonumber(d and d.x)
+    if x and x > 0 and x < 1 then
+        pedFrac = x
+        aimCam()
+    end
+    cb(1)
+end)
 
 local function stopCam()
     if not camHandle then return end
-    RenderScriptCams(false, true, 400, true, false)
+    RenderScriptCams(false, false, 0, true, false)
     DestroyCam(camHandle, false)
     camHandle = nil
 end
@@ -177,7 +193,8 @@ end
 local util = require 'modules.rustutil.client'
 util.onInventory(function(open)
     if not open then return stopCam() end
-    if not util.isPersonal() then return end -- tienda, carro, dumpster, otro jugador: sin cámara
+    -- tienda, carro, dumpster, otro jugador o mesa de reparación: sin cámara
+    if not util.isPersonal() or util.benchOpen then return end
     startCam()
     sendClothing()
 end)

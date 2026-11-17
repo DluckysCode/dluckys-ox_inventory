@@ -869,7 +869,8 @@ local function registerCommands()
 
 	-- (La tecla F1 de ox que mostraba la barra rápida se quitó: la barra está dentro del inventario)
 
-	for i = 1, 5 do
+	-- Barra rápida de 6 ranuras (teclas 1-6). Debe coincidir con HOTBAR_SLOTS de la interfaz
+	for i = 1, 6 do
 		lib.addKeybind({
 			name = ('hotkey%s'):format(i),
 			description = locale('use_hotbar', i),

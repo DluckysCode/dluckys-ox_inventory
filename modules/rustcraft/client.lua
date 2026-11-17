@@ -14,18 +14,24 @@ local function playSound(name)
     PlaySoundFrontend(-1, s[1], s[2], true)
 end
 
---- Llama al servidor y responde a la interfaz con { ok, error } + sonido
+--- Llama al servidor y responde a la interfaz con { ok, error, item } + sonido.
+--- Si el servidor devuelve una tabla (lo que hay en la mesa de reparación) va en "item".
 local function action(event, ...)
-    local ok, err = lib.callback.await(event, false, ...)
-    playSound(ok and 'craft' or 'error')
-    return { ok = ok == true, error = err }
+    local res, err = lib.callback.await(event, false, ...)
+    playSound(res and 'craft' or 'error')
+    return { ok = res and true or false, error = err, item = type(res) == 'table' and res or nil }
 end
 
 RegisterNUICallback('rustcraftGetRecipes', function(_, cb)
     cb(lib.callback.await('ox_inventory:rustcraftRecipes', false) or { error = 'El servidor no respondió' })
 end)
 RegisterNUICallback('rustcraftCraft', function(d, cb) cb(action('ox_inventory:rustcraftCraft', d.id, d.amount)) end)
-RegisterNUICallback('rustcraftRepair', function(d, cb) cb(action('ox_inventory:rustcraftRepair', d.slot)) end)
+-- Mesa de reparación: meter / sacar / ver el objeto, repararlo y cambiarle el color
+RegisterNUICallback('rustRepairGet', function(_, cb) cb({ item = lib.callback.await('ox_inventory:rustRepairGet', false) or nil }) end)
+RegisterNUICallback('rustRepairPut', function(d, cb) cb(action('ox_inventory:rustRepairPut', d.slot)) end)
+RegisterNUICallback('rustRepairTake', function(_, cb) cb(action('ox_inventory:rustRepairTake')) end)
+RegisterNUICallback('rustcraftRepair', function(_, cb) cb(action('ox_inventory:rustcraftRepair')) end)
+RegisterNUICallback('rustcraftSkin', function(d, cb) cb(action('ox_inventory:rustcraftSkin', d.tint)) end)
 RegisterNUICallback('rustcraftRecycle', function(d, cb) cb(action('ox_inventory:rustcraftRecycle', d.name, d.amount)) end)
 RegisterNUICallback('rustcraftCancel', function(d, cb)
     cb({ ok = lib.callback.await('ox_inventory:rustcraftCancel', false, d.id) == true })
@@ -48,7 +54,10 @@ local function sameState(a, b)
 end
 
 util.onInventory(function(open)
-    if not open then return end
+    if not open then
+        util.benchOpen = false -- al cerrar, el próximo inventario vuelve a ser el normal
+        return
+    end
     local last
     while util.isInventoryOpen() do
         local state = benchState(GlobalState.rustBenches, GetEntityCoords(cache.ped))
@@ -66,10 +75,62 @@ end)
 ---------------------------------------------------------------------
 local placed = {} -- [id] = { point, blip }
 
+--- Abre tu inventario desde una mesa y cambia la interfaz a su vista ("rustRepairOpen" o "rustCraftOpen")
+local function openBenchView(action)
+    util.benchOpen = true -- antes de abrir: así la cámara de la ropa no se activa
+    client.openInventory()
+    -- espera a que la interfaz tenga el inventario y luego cambia a la vista de la mesa
+    for _ = 1, 20 do
+        if util.isInventoryOpen() then
+            return SendNUIMessage({ action = action })
+        end
+        Wait(50)
+    end
+end
+
+--- Árbol de desbloqueos: UI propia (sin inventario)
+local function openTree()
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'rustTreeOpen' })
+end
+
+RegisterNUICallback('rustTreeGet', function(_, cb)
+    local data, err = lib.callback.await('ox_inventory:rustTreeGet', false)
+    cb(data or { error = err or 'El servidor no respondió' })
+end)
+RegisterNUICallback('rustTreeUnlock', function(d, cb) cb(action('ox_inventory:rustTreeUnlock', d.name)) end)
+RegisterNUICallback('rustTreeClose', function(_, cb)
+    SetNuiFocus(false, false)
+    cb(1)
+end)
+
+local hasTarget = GetResourceState('ox_target') ~= 'missing'
+
+--- Opciones de ox_target según el tipo de mesa (nil = esta mesa se usa con TAB)
+local function targetOptions(bench)
+    if not hasTarget then return end
+    local dist = bench.distance or 3.0
+    if bench.repair then
+        return {
+            { name = 'rust_repair_bench', icon = 'fa-solid fa-screwdriver-wrench', label = bench.label, distance = dist,
+              onSelect = function() openBenchView('rustRepairOpen') end },
+        }
+    end
+    if (bench.level or 0) >= 1 then
+        return {
+            { name = 'rust_bench_craft', icon = 'fa-solid fa-hammer', label = 'Craftear', distance = dist,
+              onSelect = function() openBenchView('rustCraftOpen') end },
+            { name = 'rust_bench_tree', icon = 'fa-solid fa-sitemap', label = 'Desbloquear', distance = dist,
+              onSelect = openTree },
+        }
+    end
+end
+
 local function removeBench(id)
     local b = placed[id]
     if not b then return end
     if b.point then
+        if hasTarget and b.point.object then exports.ox_target:removeLocalEntity(b.point.object) end
         util.deleteProp(b.point.object)
         util.setText(b.point, false)
         b.point:remove()
@@ -94,21 +155,26 @@ local function addBench(bench)
     end
 
     if bench.model then
+        -- Mesas de trabajo y de reparación se usan con ox_target; el resto (reciclador) con TAB
+        local options = targetOptions(bench)
+        local useTarget = options ~= nil
         local text = ('[TAB] %s'):format(bench.label)
         entry.point = lib.points.new({
             coords = vec3(bench.x, bench.y, bench.z),
             distance = 60,
             onEnter = function(self)
                 self.object = util.spawnProp(bench.model, bench.x, bench.y, bench.z, bench.h)
+                if useTarget then exports.ox_target:addLocalEntity(self.object, options) end
             end,
             onExit = function(self)
+                if useTarget and self.object then exports.ox_target:removeLocalEntity(self.object) end
                 util.deleteProp(self.object)
                 self.object = nil
                 util.setText(self, false)
             end,
-            nearby = function(self)
+            nearby = not useTarget and function(self)
                 util.setText(self, self.currentDistance <= (bench.distance or 3.0), text, 'hammer')
-            end,
+            end or nil,
         })
     end
 

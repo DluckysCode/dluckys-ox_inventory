@@ -44,6 +44,8 @@ local function unequip(source)
     if inv then
         ensureStash(e.bagId, types[e.name])
         -- lo de los slots extra se guarda dentro de la mochila, en la misma posición
+        -- (sin avisos "-16 Bandage...": no se pierde nada, solo pasa a la mochila)
+        inv.quietNotify = true
         for slot = BASE + 1, inv.slots do
             local item = inv.items[slot]
             if item then
@@ -52,6 +54,7 @@ local function unequip(source)
                 end
             end
         end
+        inv.quietNotify = nil
         Inventory.SetSlotCount(inv, BASE)
         Inventory.SetMaxWeight(inv, e.baseWeight)
     end
@@ -70,11 +73,13 @@ local function equip(source, inv, item)
     -- lo que tenía guardado la mochila pasa a los slots extra
     local stash = Inventory(bagId, nil, true)
     if stash then
+        inv.quietNotify = true -- sin avisos "+16 Bandage...": solo vuelve lo que ya tenía la mochila
         for slot, stored in pairs(stash.items) do
             if Inventory.AddItem(inv, stored.name, stored.count, stored.metadata, BASE + slot) then
                 Inventory.RemoveItem(stash, stored.name, stored.count, stored.metadata, slot)
             end
         end
+        inv.quietNotify = nil
     end
     setLook(source, item.name)
 end

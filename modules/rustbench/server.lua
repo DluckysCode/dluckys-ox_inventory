@@ -14,13 +14,14 @@ local data = json.decode(GetResourceKvpString(KVP) or '{}') or {}
 data.placed = data.placed or {}
 data.deleted = data.deleted or {}
 
--- Mesas nuevas del archivo de config que todavía no están colocadas: se ponen en sus coordenadas
+-- Mesas nuevas del archivo de config que todavía no están colocadas: se ponen en sus coordenadas.
+-- Un tipo sin coords no se coloca solo: lo pone un admin con /admininventory.
 do
     local placed = {}
     for _, p in ipairs(data.placed) do placed[p.id] = true end
     for id, b in pairs(templates) do
-        if not placed[id] and not data.deleted[id] then
-            local c = b.coords
+        local c = b.coords
+        if c and not placed[id] and not data.deleted[id] then
             data.placed[#data.placed + 1] = { id = id, template = id, x = c.x, y = c.y, z = c.z, h = c.w or 0.0 }
         end
     end
