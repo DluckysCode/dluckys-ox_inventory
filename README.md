@@ -1,64 +1,65 @@
 <div align="center">
 
-# ox_inventory
+# Dluckys ox_inventory
 
-A complete and modern inventory system for FiveM, providing a flexible slot-based inventory with support for shops, stashes, crafting, and vehicle storage.
+**Rediseño de [ox_inventory](https://github.com/overextended/ox_inventory) con estilo de supervivencia para Qbox (FiveM)**
 
-[![](https://img.shields.io/github/downloads/overextended/ox_inventory/total?style=for-the-badge&logo=github)](https://github.com/overextended/ox_inventory/releases/latest/download/ox_inventory.zip)
-[![](https://img.shields.io/github/downloads/overextended/ox_inventory/latest/total?style=for-the-badge&logo=github)](https://github.com/overextended/ox_inventory/releases/latest/download/ox_inventory.zip)
-[![](https://img.shields.io/github/v/release/overextended/ox_inventory?style=for-the-badge&logo=github)](https://github.com/overextended/ox_inventory/releases/latest/)\
-[![](https://badges.5metrics.dev/ox_inventory/serverRank.svg?style=for-the-badge)](https://5metrics.dev/resource/ox_inventory)
-[![](https://badges.5metrics.dev/ox_inventory/servers.svg?style=for-the-badge)](https://5metrics.dev/resource/ox_inventory)
-[![](https://badges.5metrics.dev/ox_inventory/players.svg?style=for-the-badge)](https://5metrics.dev/resource/ox_inventory)
-
-Refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines and to see our Contributor License Agreement.\
-Refer to [NOTICE.md](./NOTICE.md) for additional information and legal notices.
+Inventario por ranuras sin peso, ropa con el personaje, mochilas, mesas de trabajo por niveles con árbol de desbloqueos, mesa de reparación con skins y reciclador.
 
 </div>
 
-## 📚 Documentation
+![Inventario](docs/screenshots/inventario.webp)
 
-https://overextended.dev/docs/ox_inventory
+## Capturas
 
-## 💾 Download
+| Crafteo en la mesa de trabajo | Árbol de desbloqueos |
+|---|---|
+| ![Crafteo](docs/screenshots/crafteo-mesa.webp) | ![Árbol](docs/screenshots/arbol-desbloqueos.webp) |
 
-https://github.com/overextended/ox_inventory/releases/latest/download/ox_inventory.zip
+| Mesa de reparación y skins | Tienda |
+|---|---|
+| ![Reparación](docs/screenshots/mesa-reparacion.webp) | ![Tienda](docs/screenshots/tienda.webp) |
 
-## Supported frameworks
+## Qué incluye
 
-We do not guarantee compatibility or support for third-party resources.
+- **Inventario:** 24 ranuras sin límite de peso, barra rápida de 6 (teclas 1-6), suelo de 24 ranuras debajo del inventario.
+- **Ropa y personaje:** prendas alrededor del personaje con cámara centrada en el hueco; arrastra una prenda para ponértela o quitártela.
+- **Mochilas:** ranura de mochila junto a la ropa; sus ranuras extra salen a la altura del inventario.
+- **Crafteo rápido:** solo lo básico (vendas, ganzúa, mochila pequeña, armas simples) desde el inventario.
+- **Mesas de trabajo nivel 1, 2 y 3** (ox_target): *Craftear* abre la pantalla completa de crafteo; *Desbloquear* abre el árbol de su nivel, pagado con chatarra.
+- **Mesa de reparación** (ox_target): el objeto pasa a la mesa, se repara o se pinta con 8 colores (latas de spray) y se saca al inventario.
+- **Reciclador** (ox_target): entrada de 6 ranuras, botón encender/apagar, salida de 6 ranuras.
+- **Contenedores** (stash, maletero, basurero, tienda): tu inventario y el contenedor centrados, sin ropa ni cámara.
 
-- [ox_core](https://github.com/overextended/ox_core)
-- [esx](https://github.com/esx-framework/esx_core)
-- [qbox](https://github.com/Qbox-project/qbx_core)
-- [nd_core](https://github.com/ND-Framework/ND_Core)
+## Requisitos
 
-## ✨ Features
+- [Qbox](https://github.com/Qbox-project) (`qbx_core`), [ox_lib](https://github.com/overextended/ox_lib) y [ox_target](https://github.com/overextended/ox_target)
+- MySQL (oxmysql)
 
-- Server-side security ensures interactions with items, shops, and stashes are all validated.
-- Logging for important events, such as purchases, item movement, and item creation or removal.
-- Supports player-owned vehicles, licenses, and group systems implemented by frameworks.
-- Fully synchronised, allowing multiple players to [access the same inventory](https://user-images.githubusercontent.com/65407488/230926091-c0033732-d293-48c9-9d62-6f6ae0a8a488.mp4).
+## Instalación
 
-### Items
+1. Copia la carpeta en `resources/[ox]/ox_inventory` (reemplaza la original).
+2. En `server.cfg`, después de `ensure ox_inventory`:
+   ```cfg
+   exec @ox_inventory/inventory.cfg
+   ```
+3. Reinicia el servidor completo.
+4. Coloca las mesas con `/admininventory` (mesas de trabajo 1-3, mesa de reparación y reciclador).
 
-- Inventory items are stored per-slot, with customisable metadata to support item uniqueness.
-- Overrides default weapon-system with weapons as items.
-- Weapon attachments and ammo system, including special ammo types.
-- Durability, allowing items to be depleted or removed overtime.
-- Internal item system provides secure and easy handling for item use effects.
-- Compatibility with 3rd party framework item registration.
+La interfaz ya va compilada en `web/build`. Su código fuente está en [dluckys-ox_inventory-ui](https://github.com/DluckysCode/dluckys-ox_inventory-ui) (rama `dluckys-rust`).
 
-### Shops
+## Configuración
 
-- Restricted access based on groups and licenses.
-- Support different currency for items (black money, poker chips, etc).
+| Archivo | Qué se cambia |
+|---|---|
+| `inventory.cfg` | Ranuras (`inventory:slots 31` = 6 barra rápida + 24 inventario + 1 mochila), ranuras del suelo, teclas… |
+| `data/rust_crafting.lua` | Recetas, categorías, mesas y sus modelos, árbol (`unlock = { cost, after }`), reparar, skins, reciclador |
+| `data/rust_backpack.lua` | Tipos de mochila y ranuras extra |
+| `data/rust_clothing.lua` | Ranuras de ropa y cámara |
 
-### Stashes
+## Créditos y licencia
 
-- Personal stashes, linking a stash with a specific identifier or creating per-player instances.
-- Restricted access based on groups.
-- Registration of new stashes from any resource.
-- Containers allow access to stashes when using an item, like a paperbag or backpack.
-- Access gloveboxes and trunks for any vehicle.
-- Random item generation inside dumpsters and unowned vehicles.
+Basado en **[ox_inventory](https://github.com/overextended/ox_inventory)** de [Linden](https://github.com/thelindat), [Luke](https://github.com/LukeWasTakenn), [Dunak](https://github.com/dunak-debug) y colaboradores.
+Este proyecto mantiene la licencia **[GPL-3.0](./LICENSE)** del original. Consulta [NOTICE.md](./NOTICE.md) para los avisos legales del proyecto original.
+
+Las modificaciones respecto a ox_inventory están documentadas en esta página y en el historial de commits de este repositorio.
