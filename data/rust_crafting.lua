@@ -164,6 +164,7 @@ return {
     },
 
     -- RECICLAR (en mesas con recycler = true). Lo que da CADA unidad reciclada.
+    recycleTime = 5, -- segundos que tarda el reciclador en reciclar 1 unidad
     recycle = {
         garbage  = { scrapmetal = 1, cloth = 2 },
         lockpick = { scrapmetal = 2 },

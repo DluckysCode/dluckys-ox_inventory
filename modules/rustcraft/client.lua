@@ -32,7 +32,14 @@ RegisterNUICallback('rustRepairPut', function(d, cb) cb(action('ox_inventory:rus
 RegisterNUICallback('rustRepairTake', function(_, cb) cb(action('ox_inventory:rustRepairTake')) end)
 RegisterNUICallback('rustcraftRepair', function(_, cb) cb(action('ox_inventory:rustcraftRepair')) end)
 RegisterNUICallback('rustcraftSkin', function(d, cb) cb(action('ox_inventory:rustcraftSkin', d.tint)) end)
-RegisterNUICallback('rustcraftRecycle', function(d, cb) cb(action('ox_inventory:rustcraftRecycle', d.name, d.amount)) end)
+-- Reciclador: estado, meter / sacar objetos y encender / apagar
+RegisterNUICallback('rustRecycleGet', function(_, cb) cb(lib.callback.await('ox_inventory:rustRecycleGet', false) or {}) end)
+RegisterNUICallback('rustRecyclePut', function(d, cb) cb(action('ox_inventory:rustRecyclePut', d.slot)) end)
+RegisterNUICallback('rustRecycleTake', function(d, cb) cb(action('ox_inventory:rustRecycleTake', d.kind, d.slot)) end)
+RegisterNUICallback('rustRecycleToggle', function(d, cb) cb(action('ox_inventory:rustRecycleToggle', d.on == true)) end)
+RegisterNetEvent('ox_inventory:rustRecycleUpdate', function(state)
+    SendNUIMessage({ action = 'rustRecycleUpdate', data = state })
+end)
 RegisterNUICallback('rustcraftCancel', function(d, cb)
     cb({ ok = lib.callback.await('ox_inventory:rustcraftCancel', false, d.id) == true })
 end)
@@ -75,7 +82,7 @@ end)
 ---------------------------------------------------------------------
 local placed = {} -- [id] = { point, blip }
 
---- Abre tu inventario desde una mesa y cambia la interfaz a su vista ("rustRepairOpen" o "rustCraftOpen")
+--- Abre tu inventario desde una mesa y cambia la interfaz a su vista ("rustRepairOpen", "rustCraftOpen" o "rustRecycleOpen")
 local function openBenchView(action)
     util.benchOpen = true -- antes de abrir: así la cámara de la ropa no se activa
     client.openInventory()
@@ -110,6 +117,12 @@ local hasTarget = GetResourceState('ox_target') ~= 'missing'
 local function targetOptions(bench)
     if not hasTarget then return end
     local dist = bench.distance or 3.0
+    if bench.recycler then
+        return {
+            { name = 'rust_recycler', icon = 'fa-solid fa-recycle', label = bench.label, distance = dist,
+              onSelect = function() openBenchView('rustRecycleOpen') end },
+        }
+    end
     if bench.repair then
         return {
             { name = 'rust_repair_bench', icon = 'fa-solid fa-screwdriver-wrench', label = bench.label, distance = dist,
@@ -155,7 +168,7 @@ local function addBench(bench)
     end
 
     if bench.model then
-        -- Mesas de trabajo y de reparación se usan con ox_target; el resto (reciclador) con TAB
+        -- Todas las mesas se usan con ox_target; sin ox_target, con TAB (texto en pantalla)
         local options = targetOptions(bench)
         local useTarget = options ~= nil
         local text = ('[TAB] %s'):format(bench.label)

@@ -143,14 +143,10 @@ local function buildUiData()
     local repairItems = {}
     for name, cost in pairs(config.repair and config.repair.items or {}) do repairItems[name] = toList(cost) end
 
-    local recycle = {}
-    for name, out in pairs(config.recycle or {}) do recycle[name] = toList(out) end
-
     local skins = config.skins or {}
     uiData = {
         recipes = list,
         repair = { default = toList(config.repair and config.repair.default), items = repairItems },
-        recycle = recycle,
         skins = { cost = toList(skins.cost), tints = skins.tints or {} },
     }
 end
@@ -278,7 +274,6 @@ lib.callback.register('ox_inventory:rustcraftRecipes', function(source)
         recipes = list,
         bench = benchState(source),
         repair = uiData.repair,
-        recycle = uiData.recycle,
         skins = uiData.skins,
     }
 end)
@@ -460,26 +455,133 @@ lib.callback.register('ox_inventory:rustcraftSkin', function(source, tint)
 end)
 
 ---------------------------------------------------------------------
--- Reciclar (en mesa con recycler = true)
+-- Reciclador (mesa con recycler = true, se abre con ox_target). Como en Rust:
+-- ENTRADA (6 ranuras) -> se enciende -> cada "recycleTime" segundos recicla 1 unidad -> SALIDA (6 ranuras).
+-- Entrada y salida son stashes propios de cada personaje: lo que dejes dentro no se pierde.
 ---------------------------------------------------------------------
-lib.callback.register('ox_inventory:rustcraftRecycle', function(source, itemName, amount)
+local RECYCLE_SLOTS = 6
+local RECYCLE_TIME = config.recycleTime or 5
+local recycling = {} -- [source] = token del bucle encendido
+
+local function recycleInv(source, kind)
+    local owner = ownerOf(source)
+    if not owner then return end
+    local id = ('rrecycle_%s_%s'):format(kind, owner)
+    exports.ox_inventory:RegisterStash(id, kind == 'in' and 'Reciclador (entrada)' or 'Reciclador (salida)',
+        RECYCLE_SLOTS, 100000000)
+    return Inventory(id)
+end
+
+--- Estado para la interfaz: ranuras de entrada y salida y si está encendido
+local function recycleState(source)
+    local list = function(inv)
+        local slots = {}
+        for slot = 1, RECYCLE_SLOTS do
+            local item = inv and inv.items[slot]
+            slots[slot] = item and { slot = slot, name = item.name, label = itemLabel(item.name), count = item.count,
+                metadata = item.metadata } or false
+        end
+        return slots
+    end
+    return {
+        input = list(recycleInv(source, 'in')),
+        output = list(recycleInv(source, 'out')),
+        on = recycling[source] ~= nil,
+        time = RECYCLE_TIME,
+    }
+end
+
+local function sendRecycle(source)
+    TriggerClientEvent('ox_inventory:rustRecycleUpdate', source, recycleState(source))
+end
+
+local function stopRecycle(source, reason)
+    if not recycling[source] then return end
+    recycling[source] = nil
+    if reason then TriggerClientEvent('ox_lib:notify', source, { type = 'inform', description = reason }) end
+    sendRecycle(source)
+end
+
+--- Recicla 1 unidad del primer objeto de la entrada. Devuelve false + motivo para apagarse
+local function recycleOne(source)
+    if not benchState(source).recycler then return false, 'Te alejaste del reciclador' end
+    local inv, out = recycleInv(source, 'in'), recycleInv(source, 'out')
+    if not inv or not out then return false end
+
+    for slot = 1, RECYCLE_SLOTS do
+        local item = inv.items[slot]
+        local output = item and config.recycle and config.recycle[item.name]
+        if output then
+            for name, per in pairs(output) do
+                if not Inventory.CanCarryItem(out, name, per) then return false, 'La salida del reciclador está llena' end
+            end
+            if not Inventory.RemoveItem(inv, item.name, 1, item.metadata, slot) then return false end
+            for name, per in pairs(output) do Inventory.AddItem(out, name, per) end
+            Log.add('recycle', source, ('1x %s'):format(itemLabel(item.name)))
+            return true
+        end
+    end
+    return false, 'El reciclador terminó'
+end
+
+lib.callback.register('ox_inventory:rustRecycleGet', function(source)
+    return recycleState(source)
+end)
+
+--- Meter un objeto del inventario en la entrada (solo lo que se puede reciclar)
+lib.callback.register('ox_inventory:rustRecyclePut', function(source, slotId)
+    if not benchState(source).recycler then return false, 'Necesitas estar en un reciclador' end
+    local item = Inventory.GetSlot(source, tonumber(slotId))
+    if not item then return false, 'Ese objeto ya no está' end
+    if not (config.recycle and config.recycle[item.name]) then return false, 'Eso no se puede reciclar' end
+
+    local inv = recycleInv(source, 'in')
+    if not inv or not Inventory.CanCarryItem(inv, item.name, item.count, item.metadata) then
+        return false, 'La entrada del reciclador está llena'
+    end
+    if not Inventory.RemoveItem(source, item.name, item.count, item.metadata, item.slot) then return false, 'No se pudo mover' end
+    if not Inventory.AddItem(inv, item.name, item.count, item.metadata) then
+        Inventory.AddItem(source, item.name, item.count, item.metadata) -- se devuelve si algo falla
+        return false, 'No se pudo mover'
+    end
+    return recycleState(source)
+end)
+
+--- Sacar un objeto de la entrada o de la salida a tu inventario
+lib.callback.register('ox_inventory:rustRecycleTake', function(source, kind, slot)
+    local inv = recycleInv(source, kind == 'out' and 'out' or 'in')
+    local item = inv and Inventory.GetSlot(inv, tonumber(slot))
+    if not item then return false, 'Esa ranura está vacía' end
+    if not Inventory.CanCarryItem(source, item.name, item.count, item.metadata) then return false, 'Inventario lleno' end
+    if not Inventory.RemoveItem(inv, item.name, item.count, item.metadata, item.slot) then return false, 'No se pudo sacar' end
+    Inventory.AddItem(source, item.name, item.count, item.metadata)
+    return recycleState(source)
+end)
+
+--- Encender / apagar
+lib.callback.register('ox_inventory:rustRecycleToggle', function(source, on)
+    if not on then
+        stopRecycle(source)
+        return recycleState(source)
+    end
+    if recycling[source] then return recycleState(source) end
     if not benchState(source).recycler then return false, 'Necesitas estar en un reciclador' end
 
-    local output = config.recycle and config.recycle[itemName]
-    amount = math.floor(tonumber(amount) or 1)
-    if not output or amount < 1 or amount > 1000 then return false, 'Ese item no se puede reciclar' end
-    if (Inventory.GetItemCount(source, itemName) or 0) < amount then return false, 'No tienes suficientes' end
-
-    for name, per in pairs(output) do
-        if not Inventory.CanCarryItem(source, name, per * amount) then return false, 'Inventario lleno' end
-    end
-
-    if not Inventory.RemoveItem(source, itemName, amount) then return false, 'No se pudo reciclar' end
-    for name, per in pairs(output) do Inventory.AddItem(source, name, per * amount) end
-    TriggerClientEvent('ox_inventory:rustcraftDone', source)
-    Log.add('recycle', source, ('%dx %s'):format(amount, itemLabel(itemName)))
-    return true
+    local token = {}
+    recycling[source] = token
+    CreateThread(function()
+        while recycling[source] == token do
+            Wait(RECYCLE_TIME * 1000)
+            if recycling[source] ~= token then return end
+            local ok, reason = recycleOne(source)
+            if not ok then return stopRecycle(source, reason) end
+            sendRecycle(source)
+        end
+    end)
+    return recycleState(source)
 end)
+
+AddEventHandler('playerDropped', function() recycling[source] = nil end)
 
 ---------------------------------------------------------------------
 -- Árbol de desbloqueos (recetas con "unlock"): se pagan con chatarra en una mesa del nivel de la receta
